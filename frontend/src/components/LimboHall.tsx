@@ -269,23 +269,24 @@ export const LimboHall: React.FC<LimboHallProps> = ({
     };
   }, [activeFragments, currentUserId, heightPx, stopLoop]);
 
-  const handleTap = useCallback((event: { detail?: { x?: number; y?: number } }) => {
-    if (!onFragmentTap || !event.detail) {
-      return;
-    }
+  const handleTap = useCallback((event: any) => {
+    if (!onFragmentTap || !event) return;
 
-    const x = event.detail.x;
-    const y = event.detail.y;
-    if (typeof x !== 'number' || typeof y !== 'number') {
-      return;
-    }
+    // 🛠️ 修复：完美兼容微信小程序与 Web 端的坐标数据结构
+    const touch = event.changedTouches?.[0] || event.touches?.[0] || event.detail;
+    const x = touch?.x ?? touch?.clientX;
+    const y = touch?.y ?? touch?.clientY;
+
+    if (typeof x !== 'number' || typeof y !== 'number') return;
 
     const target = bodiesRef.current.find((body) => {
       const distance = Math.hypot(body.position.x - x, body.position.y - y);
-      return distance <= body.plugin.radius;
+      // 🛠️ 修复：增加 15px 容错，防止手指太粗点不到精确半径
+      return distance <= body.plugin.radius + 15;
     });
 
     if (target) {
+      Taro.vibrateShort({ type: 'medium' }).catch(() => undefined);
       onFragmentTap(target.plugin.fragment);
     }
   }, [onFragmentTap]);
