@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-
+import { Prisma, PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
-
-const fateCards = [
+const fateCards: Prisma.FateCardCreateManyInput[] = [
   {
     question_text: '你发现对方隐藏了一段会伤害你信任的视频，但那段视频也可能解释对方最深的恐惧。你会先要求真相，还是先保护关系的完整感？',
     option_a: '立即要求对方交出完整真相，即使关系可能当场崩塌。',
@@ -53,7 +51,7 @@ const fateCards = [
     option_a: '生成车票，承认这 30 天真实存在过。',
     option_b: '删除痕迹，让失败不再拥有名字。',
   },
-] as const;
+];
 
 async function main(): Promise<void> {
   await prisma.fateCard.createMany({
