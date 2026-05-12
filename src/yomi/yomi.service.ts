@@ -45,8 +45,10 @@ export class YomiService {
       throw new BadRequestException('actorUserId and targetUserId must be different users');
     }
 
+    // 🛠️ 修复：强制统一排序，无论谁发起的请求，锁的 Key 绝对唯一
+    const [u1, u2] = canonicalPair(dto.actorUserId, dto.targetUserId);
     const lock = await this.redisService.acquireLock(
-      yomiPairLockKey(dto.roomId, dto.fateCardId, dto.actorUserId, dto.targetUserId),
+      yomiPairLockKey(dto.roomId, dto.fateCardId, u1, u2),
       LOCK_TTL_MILLISECONDS,
     );
     if (!lock) {
