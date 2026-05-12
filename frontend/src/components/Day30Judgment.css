@@ -52,6 +52,10 @@
   background: rgba(255, 255, 255, 0.04);
   transform: scale(1);
   transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+  /* 🛠️ 修复：封杀微信/浏览器长按系统菜单，防止 onTouchCancel 打断 2 秒倒计时 */
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
 .day30-judgment__choice--active {

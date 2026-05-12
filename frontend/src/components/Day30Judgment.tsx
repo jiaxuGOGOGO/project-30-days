@@ -191,9 +191,10 @@ export const Day30Judgment: React.FC<Day30JudgmentProps> = ({
             <View
               key={item.choice}
               className={`day30-judgment__choice ${isActive ? 'day30-judgment__choice--active' : ''}`}
-              onTouchStart={() => startHold(item.choice)}
-              onTouchEnd={abortHold}
-              onTouchCancel={abortHold}
+              // 🛠️ 修复：增加 stopPropagation 阻止事件击穿，防止系统长按菜单打断倒计时
+              onTouchStart={(e) => { e.stopPropagation(); startHold(item.choice); }}
+              onTouchEnd={(e) => { e.stopPropagation(); abortHold(); }}
+              onTouchCancel={(e) => { e.stopPropagation(); abortHold(); }}
             >
               <Text className='day30-judgment__choice-label'>{item.label}</Text>
               <Text className='day30-judgment__choice-subtitle'>{item.subtitle}</Text>
