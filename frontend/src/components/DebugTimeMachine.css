@@ -1,0 +1,173 @@
+/* ============================================================================
+ * DebugTimeMachine.css — 上帝模式悬浮面板样式
+ * 绝对定位于屏幕右下角，置顶半透明，仅开发环境可见
+ * ============================================================================ */
+
+.debug-tm {
+  position: fixed;
+  z-index: 99999;
+  right: 16px;
+  bottom: 80px;
+  border-radius: 12px;
+  font-family: -apple-system, 'SF Mono', 'Menlo', monospace;
+  /* 封杀长按菜单 */
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+}
+
+/* ─── 折叠态 ─── */
+.debug-tm--collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: rgba(56, 189, 248, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 4px 24px rgba(56, 189, 248, 0.4);
+}
+
+.debug-tm__toggle-text {
+  color: #000000;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+/* ─── 展开态 ─── */
+.debug-tm--expanded {
+  width: 320px;
+  max-height: 580px;
+  overflow-y: auto;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(56, 189, 248, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ─── 标题栏 ─── */
+.debug-tm__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.debug-tm__title {
+  color: #38bdf8;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.debug-tm__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.debug-tm__close-text {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ─── 功能区块 ─── */
+.debug-tm__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.debug-tm__label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.debug-tm__hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.debug-tm__slider {
+  margin: 4px 0;
+}
+
+/* ─── 按钮 ─── */
+.debug-tm__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #000000;
+}
+
+.debug-tm__button--ghost {
+  background: linear-gradient(135deg, #a78bfa, #818cf8);
+  color: #ffffff;
+}
+
+.debug-tm__button--day30 {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  color: #ffffff;
+}
+
+.debug-tm__button--apply {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: #000000;
+}
+
+/* ─── Radio ─── */
+.debug-tm__radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.debug-tm__radio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.debug-tm__radio-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ─── 底部状态 ─── */
+.debug-tm__footer {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.debug-tm__footer-text {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
