@@ -71,23 +71,23 @@ const wrapText = (ctx: CanvasContext2DLike, text: string, maxWidth: number): str
   return lines;
 };
 
-const queryCanvasNode = (): Promise<CanvasNodeLike> => new Promise((resolve, reject) => {
-  const query = Taro.createSelectorQuery();
-  const nodeRef = query.select(`#${CANVAS_ID}`) as unknown as {
-    fields: (
-      option: { node: boolean; size: boolean },
-      callback?: (result: SelectorNodeResult) => void
-    ) => { exec: (callback: (result: SelectorNodeResult[]) => void) => void };
-  };
+// 🛠️ 修复：增加 setTimeout 重试机制，防止 visible 刚变为 true 时原生 Canvas 节点尚未挂载导致空指针
+const queryCanvasNode = (retryCount = 0): Promise<CanvasNodeLike> => new Promise((resolve, reject) => {
+  setTimeout(() => {
+    const query = Taro.createSelectorQuery();
+    const nodeRef = query.select(`#${CANVAS_ID}`) as any;
 
-  nodeRef.fields({ node: true, size: true }).exec((result) => {
-    const canvas = result?.[0]?.node;
-    if (!canvas) {
-      reject(new Error('Legacy ticket canvas node is not ready.'));
-      return;
-    }
-    resolve(canvas);
-  });
+    nodeRef.fields({ node: true, size: true }).exec((result) => {
+      const canvas = result?.[0]?.node;
+      if (canvas) {
+        resolve(canvas);
+      } else if (retryCount < 5) {
+        queryCanvasNode(retryCount + 1).then(resolve).catch(reject); // 递归重试
+      } else {
+        reject(new Error('Legacy ticket canvas node rendering timeout.'));
+      }
+    });
+  }, 100); // 给小程序原生渲染预留时间
 });
 
 export const LegacyTicketCanvas: React.FC<LegacyTicketCanvasProps> = ({
@@ -187,6 +187,10 @@ export const LegacyTicketCanvas: React.FC<LegacyTicketCanvasProps> = ({
     try {
       const canvas = canvasRef.current ?? await queryCanvasNode();
       canvasRef.current = canvas;
+
+      // 🛠️ 修复：强制等待 200 毫秒，确保微信底层的 Native Canvas 绘图指令全部推入 GPU 完成渲染
+      await new Promise(resolve => setTimeout(resolve, 200));
+
       const result = await Taro.canvasToTempFilePath({
         canvas: canvas as unknown as Taro.Canvas,
         width: CANVAS_WIDTH,
