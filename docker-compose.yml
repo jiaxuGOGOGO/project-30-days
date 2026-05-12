@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: project30_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: project30
+      POSTGRES_USER: project30
+      POSTGRES_PASSWORD: project30_dev_password
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - project30_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U project30 -d project30"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - project30_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: project30_redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "project30_redis_password"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - project30_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "project30_redis_password", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - project30_net
+
+volumes:
+  project30_postgres_data:
+  project30_redis_data:
+
+networks:
+  project30_net:
+    driver: bridge

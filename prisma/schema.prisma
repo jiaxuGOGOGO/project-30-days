@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ACTIVE
+  WATCHER
+
+  @@map("user_role")
+}
+
+enum RoomStatus {
+  RECRUITING
+  RUNNING
+  DESTROYED
+
+  @@map("room_status")
+}
+
+enum ConnectionStatus {
+  YOMI_MATCHING
+  SANDGLASS_24H
+  DEEP_LINK
+  JUDGMENT
+  DESTROYED
+
+  @@map("connection_status")
+}
+
+enum Decision {
+  NULL
+  DEFECT
+  COOPERATE
+
+  @@map("decision")
+}
+
+model User {
+  id               String       @id @default(uuid()) @db.Uuid
+  wechat_openid    String       @unique @db.VarChar(128)
+  shadow_video_url String       @db.Text
+  fire_points      Int          @default(3)
+  role             UserRole     @default(ACTIVE)
+  created_at       DateTime     @default(now()) @db.Timestamptz(6)
+
+  connections_as_a Connection[] @relation("ConnectionUserA")
+  connections_as_b Connection[] @relation("ConnectionUserB")
+
+  @@index([role])
+  @@index([created_at])
+  @@map("users")
+}
+
+model InstanceRoom {
+  id         String       @id @default(uuid()) @db.Uuid
+  max_users  Int          @default(100)
+  start_date DateTime     @db.Timestamptz(6)
+  /// Database-level invariant is enforced in migration SQL:
+  /// end_date must equal start_date + interval '30 days'.
+  end_date   DateTime     @db.Timestamptz(6)
+  status     RoomStatus   @default(RECRUITING)
+  created_at DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at DateTime     @updatedAt @db.Timestamptz(6)
+
+  connections Connection[]
+
+  @@index([status, start_date])
+  @@index([end_date])
+  @@map("instance_rooms")
+}
+
+model FateCard {
+  id            String   @id @default(uuid()) @db.Uuid
+  question_text String   @unique @db.Text
+  option_a      String   @db.Text
+  option_b      String   @db.Text
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("fate_cards")
+}
+
+model Connection {
+  id                   String           @id @default(uuid()) @db.Uuid
+  user_a_id            String           @db.Uuid
+  user_b_id            String           @db.Uuid
+  room_id              String           @db.Uuid
+  status               ConnectionStatus @default(YOMI_MATCHING)
+  connected_days       Int              @default(0)
+  user_a_decision      Decision         @default(NULL)
+  user_b_decision      Decision         @default(NULL)
+  sandglass_started_at DateTime?        @db.Timestamptz(6)
+  deep_link_started_at DateTime?        @db.Timestamptz(6)
+  judgment_started_at  DateTime?        @db.Timestamptz(6)
+  destroyed_at         DateTime?        @db.Timestamptz(6)
+  created_at           DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime         @updatedAt @db.Timestamptz(6)
+
+  user_a User         @relation("ConnectionUserA", fields: [user_a_id], references: [id], onDelete: Cascade)
+  user_b User         @relation("ConnectionUserB", fields: [user_b_id], references: [id], onDelete: Cascade)
+  room   InstanceRoom @relation(fields: [room_id], references: [id], onDelete: Cascade)
+
+  @@index([room_id, status])
+  @@index([user_a_id, room_id, status])
+  @@index([user_b_id, room_id, status])
+  @@index([status, sandglass_started_at])
+  @@index([status, connected_days])
+  @@map("connections")
+}
