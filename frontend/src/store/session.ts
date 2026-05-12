@@ -12,10 +12,10 @@ export interface SessionState {
 }
 
 const initialFragments: LimboUserFragment[] = [
-  { id: 'u-shadow-001', displayName: 'VOID-01', role: 'ACTIVE', firePoints: 3, tint: '#f8fafc', seed: 11 },
-  { id: 'u-shadow-002', displayName: 'VOID-02', role: 'WATCHER', firePoints: 0, tint: '#94a3b8', seed: 23 },
-  { id: 'u-shadow-003', displayName: 'VOID-03', role: 'ACTIVE', firePoints: 2, tint: '#e5e7eb', seed: 37 },
-  { id: 'u-shadow-004', displayName: 'VOID-04', role: 'ACTIVE', firePoints: 1, tint: '#cbd5e1', seed: 41 }
+  { id: '11111111-1111-4111-8111-111111111111', displayName: 'VOID-01', role: 'ACTIVE', firePoints: 3, tint: '#f8fafc', seed: 11 },
+  { id: '22222222-2222-4222-8222-222222222222', displayName: 'VOID-02', role: 'WATCHER', firePoints: 0, tint: '#94a3b8', seed: 23 },
+  { id: '33333333-3333-4333-8333-333333333333', displayName: 'VOID-03', role: 'ACTIVE', firePoints: 2, tint: '#e5e7eb', seed: 37 },
+  { id: '44444444-4444-4444-8444-444444444444', displayName: 'VOID-04', role: 'ACTIVE', firePoints: 1, tint: '#cbd5e1', seed: 41 }
 ];
 
 const clampConnectedDays = (days: number): number => {
@@ -27,7 +27,7 @@ const clampConnectedDays = (days: number): number => {
 };
 
 export const useSessionStore = create<SessionState>((set) => ({
-  currentUserId: 'u-shadow-001',
+  currentUserId: '11111111-1111-4111-8111-111111111111',
   currentRole: 'ACTIVE',
   connectedDays: 9,
   fragments: initialFragments,

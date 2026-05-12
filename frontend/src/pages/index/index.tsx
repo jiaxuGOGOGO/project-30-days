@@ -51,6 +51,9 @@ const IndexPage: React.FC = () => {
         <Button className='phase3-page__button' onClick={() => setConnectedDays(connectedDays >= 30 ? 1 : connectedDays + 1)}>
           Advance Reveal Day: {connectedDays}
         </Button>
+        <Button className='phase3-page__button' onClick={() => Taro.navigateTo({ url: '/pages/day30/index' })}>
+          Enter Day 30 Judgment
+        </Button>
       </View>
 
       <LimboHall

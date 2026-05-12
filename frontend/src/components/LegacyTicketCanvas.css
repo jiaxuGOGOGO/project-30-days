@@ -1,0 +1,63 @@
+.legacy-ticket {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 1) 56%);
+  color: #ffffff;
+}
+
+.legacy-ticket__header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legacy-ticket__eyebrow {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 26px;
+}
+
+.legacy-ticket__title {
+  color: #ffffff;
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 52px;
+}
+
+.legacy-ticket__copy {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 22px;
+  line-height: 34px;
+}
+
+.legacy-ticket__canvas {
+  width: 686px;
+  height: 980px;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: #000000;
+}
+
+.legacy-ticket__button {
+  width: 100%;
+  color: #000000;
+  background: #ffffff;
+  border-radius: 0;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.legacy-ticket__path {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 16px;
+  line-height: 24px;
+  word-break: break-all;
+}

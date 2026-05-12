@@ -1,8 +1,8 @@
 # Project 30-Days
 
-ACKNOWLEDGED. PHASE 1 COMPLETE. PHASE 2 COMPLETE. PHASE 3 COMPLETE.
+ACKNOWLEDGED. PHASE 1 COMPLETE. PHASE 2 COMPLETE. PHASE 3 COMPLETE. PHASE 4 COMPLETE.
 
-本仓库当前完成上传指令中的 **PHASE 1: DB SCHEMA & PRISMA MODEL**、**PHASE 2: BACKEND STATE MACHINE & DOUBLE-BLIND MATCHING** 与 **PHASE 3: FRONTEND PHYSICS HALL & GATING UI**。项目为匿名限时社交系统定义 PostgreSQL/Prisma 数据层、Redis/PostgreSQL 本地开发环境、10 条 FateCard 种子数据，实现 NestJS 后端中的 Redis 双盲匹配锁、24 小时沙漏状态机、第 15 天角色坍缩、每日聊天模式切换与 WebSocket 事件广播，并新增 Taro 3 + React 前端核心组件。
+本仓库当前完成上传指令中的 **PHASE 1: DB SCHEMA & PRISMA MODEL**、**PHASE 2: BACKEND STATE MACHINE & DOUBLE-BLIND MATCHING**、**PHASE 3: FRONTEND PHYSICS HALL & GATING UI** 与 **PHASE 4: DAY 30 JUDGMENT & LEGACY TICKET**。项目为匿名限时社交系统定义 PostgreSQL/Prisma 数据层、Redis/PostgreSQL 本地开发环境、10 条 FateCard 种子数据，实现 NestJS 后端中的 Redis 双盲匹配锁、24 小时沙漏状态机、第 15 天角色坍缩、每日聊天模式切换、第 30 天终局选择 API 与 WebSocket 事件广播，并新增 Taro 3 + React 前端核心组件。
 
 ## 当前交付范围
 
@@ -14,9 +14,12 @@ ACKNOWLEDGED. PHASE 1 COMPLETE. PHASE 2 COMPLETE. PHASE 3 COMPLETE.
 | `docker-compose.yml` | 启动 PostgreSQL 16 与 Redis 7，本地保留持久化卷与健康检查。 |
 | `src/yomi` | 提供 FateCard 双盲答案提交接口、Redis 24 小时答案缓存、成对分布式锁与 12 小时冷却黑名单。 |
 | `src/chronos` | 提供 NestJS 定时状态机：沙漏 24 小时过期碎裂、Deep Link 每日天数递增、第 15 天未连接用户坍缩为 WATCHER、8/20 点聊天模式切换。 |
+| `src/day30` | 提供第 30 天终局选择 API，校验 2 秒长按、防重复改判、写入双方 `Decision` 并在双方选择后产出 LEGACY 或 ASH 结果。 |
 | `src/events` | 提供 `/events` WebSocket 命名空间，支持房间加入与状态事件广播。 |
 | `frontend/src/components/LimboHall.tsx` | Taro Canvas 2D + Matter.js 无重力物理漂浮大厅，接入设备加速度计、碰撞触觉反馈与 WATCHER 幽灵态。 |
 | `frontend/src/components/GatingVideo.tsx` | 渐进式滤镜盲盒视频组件，按 `connectedDays` 使用纯 CSS `filter` 完成 Day 1-30 揭示过程，不依赖后端转码。 |
+| `frontend/src/components/Day30Judgment.tsx` | 第 30 天终局审判组件，提供 “继续 / 结束” 双按钮、2 秒长按确认、防误触心跳震动与 API 提交逻辑。 |
+| `frontend/src/components/LegacyTicketCanvas.tsx` | 星尘车票 Canvas 组件，在失败结局后用 Taro Canvas 2D API 绘制并导出分享图片。 |
 | `frontend/config/index.ts` | Taro 3 构建配置，优先支持微信小程序，同时保留 H5 预览构建。 |
 | `.env.example` | 提供数据库、Redis 与端口示例，不提交真实环境变量。 |
 
@@ -47,6 +50,19 @@ pnpm start:dev
 }
 ```
 
+## PHASE 4 API
+
+`POST /api/day30/judgment` 用于第 30 天终局选择。服务端要求 `heldMs >= 2000`，以配合前端 2 秒长按防误触设计。提交后系统会锁定当前用户最终选择；当对方尚未选择时返回 `PENDING`，双方均选择后，如果双方都选择 `COOPERATE`，连接回到 `DEEP_LINK` 并返回 `LEGACY`；只要任一方选择 `DEFECT`，连接进入 `DESTROYED` 并返回 `ASH`，前端可据此展示星尘车票。
+
+```json
+{
+  "connectionId": "00000000-0000-4000-8000-000000000010",
+  "userId": "00000000-0000-4000-8000-000000000011",
+  "choice": "COOPERATE",
+  "heldMs": 2100
+}
+```
+
 ## 定时状态机
 
 | Cron 表达式 | 行为 |
@@ -64,6 +80,15 @@ pnpm start:dev
 | `LimboHall` | 黑色大厅、Matter.js 无重力世界、陀螺仪控制、边界墙、物理碰撞、`Taro.vibrateShort({ type: 'light' })` 触觉反馈、WATCHER `isSensor` 幽灵态。 |
 | `GatingVideo` | 接收 `connectedDays`，Day 1-6 使用 `brightness(0) invert(1) drop-shadow(0 0 10px white)`，Day 7-14 使用 `blur(15px) grayscale(100%)`，Day 15-29 使用 `blur(5px) grayscale(40%)`，Day 30 移除滤镜。 |
 
+## PHASE 4 前端
+
+PHASE 4 新增 `/pages/day30/index`，用于承载第 30 天审判体验。`Day30Judgment` 不使用普通点击直接提交，而是要求用户在 “KEEP / DEFECT” 按钮上持续按压 2 秒；组件在按压期间每 500ms 调用轻震动，释放不足 2 秒会取消提交。终局失败后，页面会将返回结果传给 `LegacyTicketCanvas`，后者使用 Taro Canvas 2D API 绘制黑白星尘车票，并通过 `Taro.canvasToTempFilePath` 导出临时分享图片。
+
+| 组件 | 核心机制 |
+|---|---|
+| `Day30Judgment` | 双按钮终局选择、2 秒长按门槛、心跳震动、防重复提交、后端 `POST /api/day30/judgment` 提交。 |
+| `LegacyTicketCanvas` | 黑白星尘车票、消息数量与终局文案渲染、Canvas 2D 绘制、导出分享图片。 |
+
 ## 前端运行命令
 
 ```bash
@@ -76,7 +101,7 @@ pnpm frontend:build:h5
 
 ## 数据模型要点
 
-`User` 以 `wechat_openid` 作为唯一微信身份键，拥有 `shadow_video_url`、默认 `fire_points = 3`、`role = ACTIVE` 与创建时间。`InstanceRoom` 使用数据库级 CHECK 约束强制 `end_date` 必须等于 `start_date + interval '30 days'`，并将 `max_users` 限制在 1 到 100 之间。`Connection` 表保存双人羁绊状态机，从 `YOMI_MATCHING` 到 `SANDGLASS_24H`、`DEEP_LINK`、`JUDGMENT` 与 `DESTROYED`，并通过部分唯一索引避免同一房间内同一对用户产生多个非销毁连接。
+`User` 以 `wechat_openid` 作为唯一微信身份键，拥有 `shadow_video_url`、默认 `fire_points = 3`、`role = ACTIVE` 与创建时间。`InstanceRoom` 使用数据库级 CHECK 约束强制 `end_date` 必须等于 `start_date + interval '30 days'`，并将 `max_users` 限制在 1 到 100 之间。`Connection` 表保存双人羁绊状态机，从 `YOMI_MATCHING` 到 `SANDGLASS_24H`、`DEEP_LINK`、`JUDGMENT` 与 `DESTROYED`，并通过部分唯一索引避免同一房间内同一对用户产生多个非销毁连接。第 30 天终局选择复用 `Connection.user_a_decision` 与 `Connection.user_b_decision` 两个字段，不新增额外表，便于在强事务中完成最终判定。
 
 ## 验证命令
 
@@ -86,4 +111,5 @@ pnpm prisma:generate
 pnpm typecheck
 pnpm build
 pnpm frontend:typecheck
+pnpm frontend:build:weapp
 ```
