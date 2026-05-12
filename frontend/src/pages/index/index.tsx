@@ -5,7 +5,7 @@ import { GatingVideo } from '../../components/GatingVideo';
 import { LimboHall } from '../../components/LimboHall';
 import { DebugTimeMachine } from '../../components/DebugTimeMachine';
 import { useSessionStore } from '../../store/session';
-import type { Day30Choice, LimboUserFragment, UserRole } from '../../types/domain';
+import type { LimboUserFragment, UserRole } from '../../types/domain';
 import './index.css';
 
 const SAMPLE_VIDEO = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
@@ -73,17 +73,8 @@ const IndexPage: React.FC = () => {
         controls
       />
 
-      {/* 🛠️ 上帝模式调试面板，仅开发环境可见 */}
-      <DebugTimeMachine
-        onEnterDay30={() => Taro.navigateTo({ url: '/pages/day30/index' })}
-        onMockCounterpartDecision={(decision: Day30Choice) => {
-          Taro.showModal({
-            title: 'Mock Applied',
-            content: `Counterpart decision set to: ${decision}. Navigate to Day 30 to see the effect.`,
-            showCancel: false,
-          }).catch(() => undefined);
-        }}
-      />
+      {/* 开发态上帝模式调试面板：建议挂在首页，便于直接观察 LimboHall 与 GatingVideo 的响应。 */}
+      <DebugTimeMachine />
     </View>
   );
 };

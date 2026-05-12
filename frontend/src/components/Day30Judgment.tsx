@@ -14,6 +14,8 @@ interface Day30JudgmentProps {
   msgCount: number;
   submitUrl?: string;
   connectionAlias?: string;
+  /** 开发态调试钩子：传入对方决策后，本地直接结算，不请求后端。 */
+  debugCounterpartDecision?: Day30Choice;
   onSubmitted?: (result: Day30JudgmentResult) => void;
 }
 
@@ -53,6 +55,7 @@ export const Day30Judgment: React.FC<Day30JudgmentProps> = ({
   msgCount,
   submitUrl = '/api/day30/judgment',
   connectionAlias = 'DAY30 PAIR',
+  debugCounterpartDecision,
   onSubmitted
 }) => {
   const [activeChoice, setActiveChoice] = useState<Day30Choice | null>(null);
@@ -90,6 +93,24 @@ export const Day30Judgment: React.FC<Day30JudgmentProps> = ({
     };
 
     try {
+      if (debugCounterpartDecision) {
+        const nextResult: Day30JudgmentResult = {
+          outcome: choice === 'COOPERATE' && debugCounterpartDecision === 'COOPERATE' ? 'LEGACY' : 'ASH',
+          msgCount,
+          ticketTitle: choice === 'COOPERATE' && debugCounterpartDecision === 'COOPERATE'
+            ? 'Mutual Key Legacy'
+            : 'Single-Sided Ash Ticket'
+        };
+        setResult(nextResult);
+        onSubmitted?.(nextResult);
+        await Taro.showToast({
+          title: `Debug outcome: ${nextResult.outcome}`,
+          icon: 'none',
+          duration: 1500
+        });
+        return;
+      }
+
       const response = await Taro.request<JudgmentApiResponse>({
         url: submitUrl,
         method: 'POST',
@@ -128,7 +149,7 @@ export const Day30Judgment: React.FC<Day30JudgmentProps> = ({
       setActiveChoice(null);
       setHeldMs(0);
     }
-  }, [connectionId, msgCount, onSubmitted, submitUrl, submitting, userId]);
+  }, [connectionId, debugCounterpartDecision, msgCount, onSubmitted, submitUrl, submitting, userId]);
 
   const startHold = useCallback((choice: Day30Choice) => {
     if (submitting) {

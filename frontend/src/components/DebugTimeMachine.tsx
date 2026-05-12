@@ -1,35 +1,38 @@
 /**
  * ============================================================================
- * DebugTimeMachine.tsx — 上帝模式沙盒控制台 (God Mode Panel)
+ * DebugTimeMachine.tsx — 开发态上帝模式沙盒控制台
  * ============================================================================
  *
- * 仅在开发环境下渲染。绝对定位于屏幕右下角，半透明置顶悬浮。
- * 提供一键测试按钮，直接操作全局 Zustand 状态，用于微信开发者工具中
- * 手动验证 30 天生命周期的各阶段视觉表现。
- *
- * 功能清单：
- *   1. [Slider] 天数滑块 1-30 天 → 控制 GatingVideo 的 CSS Filter 渐变
- *   2. [Button] Toggle GHOST → 切换自己为 WATCHER，验证 LimboHall 物理表现
- *   3. [Button] 直达 Day 30 终局 → 强制拉起 Day30Judgment 组件
- *   4. [Radio] Mock 对方决策 → 伪造 COOPERATE / DEFECT 测试双向结局
+ * 仅在开发环境渲染。该组件直接操作前端 Zustand 会话态，用于微信开发者
+ * 工具与真机预览中快速穿梭 30 天生命周期，并以 overlay 方式唤起 Day30
+ * 终局组件，避免频繁改后端数据或等待真实日期推进。
  * ============================================================================
  */
 
 import React, { useCallback, useState } from 'react';
 import Taro from '@tarojs/taro';
-import { Button, RadioGroup, Radio, Slider, Text, View } from '@tarojs/components';
+import { Button, Radio, RadioGroup, Slider, Text, View } from '@tarojs/components';
+import { Day30Judgment } from './Day30Judgment';
 import { useSessionStore } from '../store/session';
-import type { Day30Choice, LimboUserFragment, UserRole } from '../types/domain';
+import type { Day30Choice, Day30JudgmentResult, LimboUserFragment, UserRole } from '../types/domain';
 import './DebugTimeMachine.css';
 
-// 仅在开发环境下渲染
 const IS_DEV = process.env.NODE_ENV === 'development' || process.env.TARO_ENV === 'development';
+const DEBUG_CONNECTION_ID = 'debug-day30-connection';
+const DEBUG_MESSAGE_COUNT = 347;
 
 interface DebugTimeMachineProps {
-  /** 外部回调：当用户点击"直达 Day 30"时触发 */
+  /** 可选外部通知：overlay 打开时触发，不建议在这里 navigate。 */
   onEnterDay30?: () => void;
-  /** 外部回调：当用户 Mock 对方决策时触发 */
+  /** 可选外部通知：mock 对方决策变化时触发。 */
   onMockCounterpartDecision?: (decision: Day30Choice) => void;
+}
+
+function describeRevealDay(day: number): string {
+  if (day <= 6) return 'SILHOUETTE · 高反差纯黑剪影';
+  if (day <= 14) return 'FROSTED MEMORY · 15px 毛玻璃记忆';
+  if (day <= 29) return 'NEAR SIGNAL · 5px 模糊接近清晰';
+  return 'FULL REVEAL · 终局完全清晰';
 }
 
 export const DebugTimeMachine: React.FC<DebugTimeMachineProps> = ({
@@ -48,179 +51,172 @@ export const DebugTimeMachine: React.FC<DebugTimeMachineProps> = ({
 
   const [collapsed, setCollapsed] = useState(true);
   const [mockDecision, setMockDecision] = useState<Day30Choice>('COOPERATE');
+  const [day30OverlayOpen, setDay30OverlayOpen] = useState(false);
+  const [lastJudgmentResult, setLastJudgmentResult] = useState<Day30JudgmentResult | null>(null);
 
-  // ─── 功能 1: 天数滑块 ───
+  const patchCurrentFragmentRole = useCallback(
+    (nextRole: UserRole) => {
+      const nextFragments = fragments.map((fragment: LimboUserFragment) => {
+        if (fragment.id !== currentUserId) return fragment;
+        return {
+          ...fragment,
+          role: nextRole,
+          firePoints: nextRole === 'WATCHER' ? 0 : Math.max(1, fragment.firePoints),
+        };
+      });
+      setFragments(nextFragments);
+    },
+    [currentUserId, fragments, setFragments],
+  );
+
   const handleDaySliderChange = useCallback(
-    (e: any) => {
-      const value = e.detail?.value ?? e?.detail ?? 1;
-      setConnectedDays(Number(value));
+    (event: { detail?: { value?: number } }) => {
+      const nextDay = Number(event.detail?.value ?? 1);
+      setConnectedDays(nextDay);
     },
     [setConnectedDays],
   );
 
-  // ─── 功能 2: Toggle GHOST ───
   const handleToggleGhost = useCallback(() => {
     const nextRole: UserRole = currentRole === 'ACTIVE' ? 'WATCHER' : 'ACTIVE';
     setRole(nextRole);
-    setFragments(
-      fragments.map((fragment: LimboUserFragment) =>
-        fragment.id === currentUserId
-          ? {
-              ...fragment,
-              role: nextRole,
-              firePoints: nextRole === 'WATCHER' ? 0 : Math.max(1, fragment.firePoints),
-            }
-          : fragment,
-      ),
-    );
-    Taro.vibrateShort({ type: 'heavy' }).catch(() => undefined);
-    Taro.showToast({
-      title: `Role → ${nextRole}`,
-      icon: 'none',
-      duration: 800,
-    }).catch(() => undefined);
-  }, [currentRole, currentUserId, fragments, setFragments, setRole]);
+    patchCurrentFragmentRole(nextRole);
 
-  // ─── 功能 3: 直达 Day 30 终局 ───
+    Taro.vibrateShort({ type: nextRole === 'WATCHER' ? 'heavy' : 'medium' }).catch(() => undefined);
+    Taro.showToast({
+      title: nextRole === 'WATCHER' ? 'WATCHER sensor enabled' : 'ACTIVE rigid body restored',
+      icon: 'none',
+      duration: 900,
+    }).catch(() => undefined);
+  }, [currentRole, patchCurrentFragmentRole, setRole]);
+
   const handleEnterDay30 = useCallback(() => {
     setConnectedDays(30);
-    if (onEnterDay30) {
-      onEnterDay30();
-    } else {
-      Taro.navigateTo({ url: '/pages/day30/index' }).catch(() => undefined);
-    }
-    Taro.vibrateShort({ type: 'medium' }).catch(() => undefined);
+    setDay30OverlayOpen(true);
+    onEnterDay30?.();
+    Taro.vibrateShort({ type: 'heavy' }).catch(() => undefined);
   }, [onEnterDay30, setConnectedDays]);
 
-  // ─── 功能 4: Mock 对方决策 ───
   const handleMockDecisionChange = useCallback(
-    (e: any) => {
-      const value = (e.detail?.value ?? 'COOPERATE') as Day30Choice;
-      setMockDecision(value);
+    (event: { detail?: { value?: string } }) => {
+      const nextDecision = (event.detail?.value ?? 'COOPERATE') as Day30Choice;
+      setMockDecision(nextDecision);
+      onMockCounterpartDecision?.(nextDecision);
     },
-    [],
+    [onMockCounterpartDecision],
   );
 
-  const handleApplyMockDecision = useCallback(() => {
-    onMockCounterpartDecision?.(mockDecision);
-    Taro.showToast({
-      title: `Mock: counterpart → ${mockDecision}`,
-      icon: 'none',
-      duration: 1200,
-    }).catch(() => undefined);
-  }, [mockDecision, onMockCounterpartDecision]);
+  const handleJudgmentSubmitted = useCallback((result: Day30JudgmentResult) => {
+    setLastJudgmentResult(result);
+  }, []);
 
-  // ─── 环境守卫 ───
   if (!IS_DEV) {
     return null;
   }
 
-  // ─── 折叠态：只显示一个小按钮 ───
-  if (collapsed) {
-    return (
-      <View className='debug-tm debug-tm--collapsed' onClick={() => setCollapsed(false)}>
-        <Text className='debug-tm__toggle-text'>⚡ GOD</Text>
-      </View>
-    );
-  }
-
-  // ─── 展开态：完整面板 ───
   return (
-    <View className='debug-tm debug-tm--expanded'>
-      {/* 标题栏 */}
-      <View className='debug-tm__header'>
-        <Text className='debug-tm__title'>⚡ GOD MODE</Text>
-        <View className='debug-tm__close' onClick={() => setCollapsed(true)}>
-          <Text className='debug-tm__close-text'>×</Text>
+    <>
+      {collapsed ? (
+        <View className='debug-tm debug-tm--collapsed' onClick={() => setCollapsed(false)}>
+          <Text className='debug-tm__toggle-text'>GOD</Text>
         </View>
-      </View>
-
-      {/* 功能 1: 天数滑块 */}
-      <View className='debug-tm__section'>
-        <Text className='debug-tm__label'>DAY: {connectedDays} / 30</Text>
-        <Slider
-          className='debug-tm__slider'
-          min={1}
-          max={30}
-          step={1}
-          value={connectedDays}
-          activeColor='#38bdf8'
-          backgroundColor='rgba(255,255,255,0.2)'
-          blockSize={18}
-          onChange={handleDaySliderChange}
-        />
-        <Text className='debug-tm__hint'>
-          {connectedDays <= 6
-            ? '🌑 SILHOUETTE (纯黑高光剪影)'
-            : connectedDays <= 14
-            ? '🌫️ FROSTED (毛玻璃)'
-            : connectedDays <= 29
-            ? '📡 NEAR SIGNAL (接近清晰)'
-            : '☀️ FULL REVEAL (完全清晰)'}
-        </Text>
-      </View>
-
-      {/* 功能 2: Toggle GHOST */}
-      <View className='debug-tm__section'>
-        <Button
-          className='debug-tm__button debug-tm__button--ghost'
-          onClick={handleToggleGhost}
-        >
-          {currentRole === 'ACTIVE' ? '👻 Toggle → WATCHER' : '🔥 Toggle → ACTIVE'}
-        </Button>
-        <Text className='debug-tm__hint'>
-          当前: {currentRole} | isSensor={currentRole === 'WATCHER' ? 'true' : 'false'}
-        </Text>
-      </View>
-
-      {/* 功能 3: 直达 Day 30 */}
-      <View className='debug-tm__section'>
-        <Button
-          className='debug-tm__button debug-tm__button--day30'
-          onClick={handleEnterDay30}
-        >
-          🎯 直达 Day 30 终局
-        </Button>
-      </View>
-
-      {/* 功能 4: Mock 对方决策 */}
-      <View className='debug-tm__section'>
-        <Text className='debug-tm__label'>MOCK 对方决策:</Text>
-        <RadioGroup onChange={handleMockDecisionChange} className='debug-tm__radio-group'>
-          <View className='debug-tm__radio-row'>
-            <Radio
-              value='COOPERATE'
-              checked={mockDecision === 'COOPERATE'}
-              color='#4ade80'
-              className='debug-tm__radio'
-            />
-            <Text className='debug-tm__radio-label'>COOPERATE (交出钥匙)</Text>
+      ) : (
+        <View className='debug-tm debug-tm--expanded'>
+          <View className='debug-tm__header'>
+            <View>
+              <Text className='debug-tm__title'>GOD MODE</Text>
+              <Text className='debug-tm__subtitle'>Development-only time machine</Text>
+            </View>
+            <View className='debug-tm__close' onClick={() => setCollapsed(true)}>
+              <Text className='debug-tm__close-text'>×</Text>
+            </View>
           </View>
-          <View className='debug-tm__radio-row'>
-            <Radio
-              value='DEFECT'
-              checked={mockDecision === 'DEFECT'}
-              color='#f87171'
-              className='debug-tm__radio'
-            />
-            <Text className='debug-tm__radio-label'>DEFECT (保留防御)</Text>
-          </View>
-        </RadioGroup>
-        <Button
-          className='debug-tm__button debug-tm__button--apply'
-          onClick={handleApplyMockDecision}
-        >
-          ✅ Apply Mock Decision
-        </Button>
-      </View>
 
-      {/* 状态摘要 */}
-      <View className='debug-tm__footer'>
-        <Text className='debug-tm__footer-text'>
-          uid: {currentUserId.slice(0, 8)}… | day: {connectedDays} | role: {currentRole}
-        </Text>
-      </View>
-    </View>
+          <View className='debug-tm__section'>
+            <Text className='debug-tm__label'>DAY SLIDER: {connectedDays} / 30</Text>
+            <Slider
+              className='debug-tm__slider'
+              min={1}
+              max={30}
+              step={1}
+              value={connectedDays}
+              activeColor='#38bdf8'
+              backgroundColor='rgba(255,255,255,0.2)'
+              blockSize={18}
+              onChange={handleDaySliderChange}
+              onChanging={handleDaySliderChange}
+            />
+            <Text className='debug-tm__hint'>{describeRevealDay(connectedDays)}</Text>
+          </View>
+
+          <View className='debug-tm__section'>
+            <Button className='debug-tm__button debug-tm__button--ghost' onClick={handleToggleGhost}>
+              {currentRole === 'ACTIVE' ? '幽灵开关：ACTIVE → WATCHER' : '幽灵开关：WATCHER → ACTIVE'}
+            </Button>
+            <Text className='debug-tm__hint'>
+              LimboHall 当前用户刚体：role={currentRole}，isSensor={currentRole === 'WATCHER' ? 'true' : 'false'}。
+            </Text>
+          </View>
+
+          <View className='debug-tm__section'>
+            <Button className='debug-tm__button debug-tm__button--day30' onClick={handleEnterDay30}>
+              直达终局：Overlay Day30Judgment
+            </Button>
+            <Text className='debug-tm__hint'>
+              该按钮会将 connectedDays 设为 30，并在当前页面直接覆盖终局组件。
+            </Text>
+          </View>
+
+          <View className='debug-tm__section'>
+            <Text className='debug-tm__label'>模拟对方抉择</Text>
+            <RadioGroup onChange={handleMockDecisionChange} className='debug-tm__radio-group'>
+              <View className='debug-tm__radio-row'>
+                <Radio value='COOPERATE' checked={mockDecision === 'COOPERATE'} color='#4ade80' />
+                <Text className='debug-tm__radio-label'>COOPERATE · 双方合作时解锁 LEGACY</Text>
+              </View>
+              <View className='debug-tm__radio-row'>
+                <Radio value='DEFECT' checked={mockDecision === 'DEFECT'} color='#f87171' />
+                <Text className='debug-tm__radio-label'>DEFECT · 单防/背叛时进入 ASH</Text>
+              </View>
+            </RadioGroup>
+          </View>
+
+          <View className='debug-tm__footer'>
+            <Text className='debug-tm__footer-text'>
+              uid={currentUserId.slice(0, 8)}… · day={connectedDays} · role={currentRole} · peer={mockDecision}
+            </Text>
+            {lastJudgmentResult ? (
+              <Text className='debug-tm__footer-text'>last outcome={lastJudgmentResult.outcome}</Text>
+            ) : null}
+          </View>
+        </View>
+      )}
+
+      {day30OverlayOpen ? (
+        <View className='debug-tm-overlay'>
+          <View className='debug-tm-overlay__backdrop' onClick={() => setDay30OverlayOpen(false)} />
+          <View className='debug-tm-overlay__panel'>
+            <View className='debug-tm-overlay__header'>
+              <Text className='debug-tm-overlay__title'>DAY 30 JUDGMENT · DEBUG OVERLAY</Text>
+              <Button className='debug-tm-overlay__close' onClick={() => setDay30OverlayOpen(false)}>
+                CLOSE
+              </Button>
+            </View>
+            <Text className='debug-tm-overlay__hint'>
+              Mock counterpart: {mockDecision}. 双方 COOPERATE 将进入 LEGACY；任一方 DEFECT 将进入 ASH。
+            </Text>
+            <Day30Judgment
+              connectionId={DEBUG_CONNECTION_ID}
+              userId={currentUserId}
+              msgCount={DEBUG_MESSAGE_COUNT}
+              connectionAlias='DEBUG DAY30 PAIR'
+              debugCounterpartDecision={mockDecision}
+              onSubmitted={handleJudgmentSubmitted}
+            />
+          </View>
+        </View>
+      ) : null}
+    </>
   );
 };
 

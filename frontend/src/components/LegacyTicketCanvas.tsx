@@ -77,7 +77,7 @@ const queryCanvasNode = (retryCount = 0): Promise<CanvasNodeLike> => new Promise
     const query = Taro.createSelectorQuery();
     const nodeRef = query.select(`#${CANVAS_ID}`) as any;
 
-    nodeRef.fields({ node: true, size: true }).exec((result) => {
+    nodeRef.fields({ node: true, size: true }).exec((result: Array<{ node?: CanvasNodeLike }>) => {
       const canvas = result?.[0]?.node;
       if (canvas) {
         resolve(canvas);

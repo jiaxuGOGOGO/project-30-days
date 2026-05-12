@@ -15,6 +15,7 @@
     "start": "node dist/src/main.js",
     "start:dev": "tsx watch src/main.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:e2e": "cross-env E2E_CONCURRENCY=20 tsx test/e2e-simulation.spec.ts",
     "frontend:typecheck": "tsc -p frontend/tsconfig.json --noEmit",
     "frontend:build:weapp": "cd frontend && taro build --type weapp",
     "frontend:build:h5": "cd frontend && taro build --type h5"
@@ -54,6 +55,7 @@
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.5.0",
+    "cross-env": "^7.0.3",
     "babel-preset-taro": "3.6.40",
     "postcss": "^8.5.14",
     "prisma": "^5.22.0",
@@ -70,6 +72,7 @@
       "@nestjs/core",
       "@prisma/engines",
       "@swc/core",
+      "@tarojs/binding",
       "esbuild",
       "prisma",
       "swiper"

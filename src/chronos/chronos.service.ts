@@ -125,19 +125,27 @@ export class ChronosService {
 
   private async collapseUnlinkedUsersToWatchers(roomId: string): Promise<string[]> {
     const rows = await this.prisma.$queryRaw<Array<{ id: string }>>`
-      WITH room_users AS (
-        SELECT user_a_id AS id FROM connections WHERE room_id = ${roomId}::uuid AND status <> 'DESTROYED'
+      WITH target_room AS (
+        SELECT id, start_date, end_date
+        FROM instance_rooms
+        WHERE id = ${roomId}::uuid
+      ), protected_users AS (
+        SELECT user_a_id AS id
+        FROM connections
+        WHERE room_id = ${roomId}::uuid AND status IN ('DEEP_LINK', 'SANDGLASS_24H')
         UNION
-        SELECT user_b_id AS id FROM connections WHERE room_id = ${roomId}::uuid AND status <> 'DESTROYED'
-      ), deep_linked_users AS (
-        SELECT user_a_id AS id FROM connections WHERE room_id = ${roomId}::uuid AND status = 'DEEP_LINK'
-        UNION
-        SELECT user_b_id AS id FROM connections WHERE room_id = ${roomId}::uuid AND status = 'DEEP_LINK'
+        SELECT user_b_id AS id
+        FROM connections
+        WHERE room_id = ${roomId}::uuid AND status IN ('DEEP_LINK', 'SANDGLASS_24H')
       ), candidates AS (
-        SELECT ru.id FROM room_users ru
-        LEFT JOIN deep_linked_users du ON du.id = ru.id
-        JOIN users u ON u.id = ru.id
-        WHERE du.id IS NULL AND u.role = 'ACTIVE'
+        SELECT u.id
+        FROM users u
+        CROSS JOIN target_room r
+        LEFT JOIN protected_users pu ON pu.id = u.id
+        WHERE u.role = 'ACTIVE'
+          AND pu.id IS NULL
+          AND u.created_at >= r.start_date
+          AND u.created_at < r.end_date
       ), updated AS (
         UPDATE users
         SET role = 'WATCHER'
