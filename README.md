@@ -1,8 +1,8 @@
 # Project 30-Days
 
-ACKNOWLEDGED. PHASE 1 COMPLETE. PHASE 2 COMPLETE.
+ACKNOWLEDGED. PHASE 1 COMPLETE. PHASE 2 COMPLETE. PHASE 3 COMPLETE.
 
-本仓库当前完成上传指令中的 **PHASE 1: DB SCHEMA & PRISMA MODEL** 与 **PHASE 2: BACKEND STATE MACHINE & DOUBLE-BLIND MATCHING**。项目为匿名限时社交系统定义 PostgreSQL/Prisma 数据层、Redis/PostgreSQL 本地开发环境、10 条 FateCard 种子数据，并实现 NestJS 后端中的 Redis 双盲匹配锁、24 小时沙漏状态机、第 15 天角色坍缩、每日聊天模式切换与 WebSocket 事件广播。
+本仓库当前完成上传指令中的 **PHASE 1: DB SCHEMA & PRISMA MODEL**、**PHASE 2: BACKEND STATE MACHINE & DOUBLE-BLIND MATCHING** 与 **PHASE 3: FRONTEND PHYSICS HALL & GATING UI**。项目为匿名限时社交系统定义 PostgreSQL/Prisma 数据层、Redis/PostgreSQL 本地开发环境、10 条 FateCard 种子数据，实现 NestJS 后端中的 Redis 双盲匹配锁、24 小时沙漏状态机、第 15 天角色坍缩、每日聊天模式切换与 WebSocket 事件广播，并新增 Taro 3 + React 前端核心组件。
 
 ## 当前交付范围
 
@@ -15,7 +15,10 @@ ACKNOWLEDGED. PHASE 1 COMPLETE. PHASE 2 COMPLETE.
 | `src/yomi` | 提供 FateCard 双盲答案提交接口、Redis 24 小时答案缓存、成对分布式锁与 12 小时冷却黑名单。 |
 | `src/chronos` | 提供 NestJS 定时状态机：沙漏 24 小时过期碎裂、Deep Link 每日天数递增、第 15 天未连接用户坍缩为 WATCHER、8/20 点聊天模式切换。 |
 | `src/events` | 提供 `/events` WebSocket 命名空间，支持房间加入与状态事件广播。 |
-| `.env.example` | 提供数据库与 Redis 连接字符串示例，不提交真实环境变量。 |
+| `frontend/src/components/LimboHall.tsx` | Taro Canvas 2D + Matter.js 无重力物理漂浮大厅，接入设备加速度计、碰撞触觉反馈与 WATCHER 幽灵态。 |
+| `frontend/src/components/GatingVideo.tsx` | 渐进式滤镜盲盒视频组件，按 `connectedDays` 使用纯 CSS `filter` 完成 Day 1-30 揭示过程，不依赖后端转码。 |
+| `frontend/config/index.ts` | Taro 3 构建配置，优先支持微信小程序，同时保留 H5 预览构建。 |
+| `.env.example` | 提供数据库、Redis 与端口示例，不提交真实环境变量。 |
 
 ## 快速启动
 
@@ -52,6 +55,25 @@ pnpm start:dev
 | `0 0 * * *` | 每天零点递增 `DEEP_LINK` 连接的 `connected_days`，并在房间到达第 15 天后把未进入 `DEEP_LINK` 的 ACTIVE 用户坍缩为 `WATCHER`。 |
 | `0 8,20 * * *` | 每天 08:00 将 Redis `CHAT_MODE` 设置为 `ICE`，每天 20:00 设置为 `FIRE`，并广播 `chat:mode-updated`。 |
 
+## PHASE 3 前端
+
+前端位于 `frontend/`，采用 **Taro 3 + React + TypeScript + Zustand + TailwindCSS + Matter.js**。所有页面和组件都使用 Taro 组件与 Taro API，未使用 `window`、`document`、原生 `div` 或浏览器 DOM Canvas。`LimboHall` 通过 `Taro.createSelectorQuery()` 获取小程序 Canvas 2D 节点，再用 Matter.js 维护无重力刚体世界，并通过 `Taro.onAccelerometerChange` 将设备倾斜映射到物理重力向量。WATCHER 用户的 Body 会被设置为 `isSensor = true`，透明度降至 0.2，表现为失去碰撞体积的幽灵态。
+
+| 组件 | 核心机制 |
+|---|---|
+| `LimboHall` | 黑色大厅、Matter.js 无重力世界、陀螺仪控制、边界墙、物理碰撞、`Taro.vibrateShort({ type: 'light' })` 触觉反馈、WATCHER `isSensor` 幽灵态。 |
+| `GatingVideo` | 接收 `connectedDays`，Day 1-6 使用 `brightness(0) invert(1) drop-shadow(0 0 10px white)`，Day 7-14 使用 `blur(15px) grayscale(100%)`，Day 15-29 使用 `blur(5px) grayscale(40%)`，Day 30 移除滤镜。 |
+
+## 前端运行命令
+
+```bash
+pnpm frontend:typecheck
+pnpm frontend:build:weapp
+pnpm frontend:build:h5
+```
+
+微信开发者工具可打开 `frontend/` 目录；默认 `project.config.json` 使用 `touristappid`，接入真实小程序时需要替换为正式 AppID。
+
 ## 数据模型要点
 
 `User` 以 `wechat_openid` 作为唯一微信身份键，拥有 `shadow_video_url`、默认 `fire_points = 3`、`role = ACTIVE` 与创建时间。`InstanceRoom` 使用数据库级 CHECK 约束强制 `end_date` 必须等于 `start_date + interval '30 days'`，并将 `max_users` 限制在 1 到 100 之间。`Connection` 表保存双人羁绊状态机，从 `YOMI_MATCHING` 到 `SANDGLASS_24H`、`DEEP_LINK`、`JUDGMENT` 与 `DESTROYED`，并通过部分唯一索引避免同一房间内同一对用户产生多个非销毁连接。
@@ -63,4 +85,5 @@ pnpm prisma:validate
 pnpm prisma:generate
 pnpm typecheck
 pnpm build
+pnpm frontend:typecheck
 ```

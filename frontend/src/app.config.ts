@@ -1,0 +1,10 @@
+export default defineAppConfig({
+  pages: ['pages/index/index'],
+  window: {
+    backgroundTextStyle: 'light',
+    navigationBarBackgroundColor: '#000000',
+    navigationBarTitleText: 'Project 30-Days',
+    navigationBarTextStyle: 'white',
+    backgroundColor: '#000000'
+  }
+});

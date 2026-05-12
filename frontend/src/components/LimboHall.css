@@ -1,0 +1,44 @@
+.limbo-hall {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 360px;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-sizing: border-box;
+}
+
+.limbo-hall__hud {
+  position: absolute;
+  z-index: 2;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.limbo-hall__title {
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  line-height: 42px;
+}
+
+.limbo-hall__subtitle {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: 1px;
+}
+
+.limbo-hall__canvas {
+  display: block;
+  width: 100%;
+  min-height: 360px;
+  background: #000000;
+}
