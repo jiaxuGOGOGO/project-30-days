@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Connection, ConnectionStatus, Prisma, RoomStatus, UserRole } from '@prisma/client';
+import { BoardingService } from '../boarding/boarding.service.js';
+import { DailyEchoService } from '../daily-echo/daily-echo.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RedisService } from '../redis/redis.service.js';
@@ -15,8 +17,13 @@ export class ChronosService {
     private readonly prisma: PrismaService,
     private readonly redisService: RedisService,
     private readonly eventsGateway: EventsGateway,
+    private readonly dailyEchoService: DailyEchoService,
+    private readonly boardingService: BoardingService,
   ) {}
 
+  /**
+   * Every minute: destroy expired sandglass connections (24h timeout).
+   */
   @Cron('*/1 * * * *')
   async shatterExpiredSandglassConnections(): Promise<void> {
     const cutoff = new Date(Date.now() - ONE_DAY_MILLISECONDS);
@@ -45,6 +52,9 @@ export class ChronosService {
     }
   }
 
+  /**
+   * Daily at midnight CST: advance connected_days and collapse Day 15 users.
+   */
   @Cron('0 0 * * *', { timeZone: 'Asia/Shanghai' })
   async advanceDeepLinkDaysAndCollapseDayFifteen(): Promise<void> {
     await this.prisma.connection.updateMany({
@@ -80,6 +90,26 @@ export class ChronosService {
     }
   }
 
+  /**
+   * Daily at 20:00 CST: generate daily echo prompts for all active connections.
+   */
+  @Cron('0 20 * * *', { timeZone: 'Asia/Shanghai' })
+  async triggerDailyEchoes(): Promise<void> {
+    const count = await this.dailyEchoService.generateDailyEchoes();
+    this.logger.log(`Chronos triggered daily echo generation: ${count} echoes created`);
+  }
+
+  /**
+   * Every 5 minutes: check if any BOARDING rooms should depart.
+   */
+  @Cron('*/5 * * * *')
+  async checkBoardingDepartures(): Promise<void> {
+    await this.boardingService.checkAndDepartScheduledRooms();
+  }
+
+  /**
+   * Twice daily at 8:00 and 20:00 CST: switch chat mode (ICE/FIRE).
+   */
   @Cron('0 8,20 * * *', { timeZone: 'Asia/Shanghai' })
   async switchChatMode(): Promise<void> {
     const hour = Number(

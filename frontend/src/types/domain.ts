@@ -1,5 +1,7 @@
 export type UserRole = 'ACTIVE' | 'WATCHER';
 
+export type RevealLevel = 'SILHOUETTE' | 'FROSTED' | 'NEAR' | 'FULL';
+
 export interface LimboUserFragment {
   id: string;
   displayName: string;
@@ -11,7 +13,10 @@ export interface LimboUserFragment {
 }
 
 export interface GatingVideoSource {
+  /** Server-provided signed URL at the appropriate reveal level */
   src: string;
+  /** Server-determined reveal level */
+  revealLevel: RevealLevel;
   poster?: string;
   connectedDays: number;
 }
@@ -38,4 +43,30 @@ export interface Day30JudgmentResult {
   msgCount: number;
   ticketTitle?: string;
   ticketPath?: string;
+}
+
+// --- Phase 0: Daily Echo Types ---
+
+export interface DailyEchoPrompt {
+  id: string;
+  dayNumber: number;
+  promptText: string;
+  myAnswer: string | null;
+  partnerAnswer: string | null;
+  bothAnswered: boolean;
+  canReveal: boolean;
+}
+
+// --- Phase 0: Boarding Types ---
+
+export type RoomStatus = 'BOARDING' | 'RECRUITING' | 'RUNNING' | 'DESTROYED';
+
+export interface BoardingStatus {
+  roomId: string;
+  status: RoomStatus;
+  currentCount: number;
+  minUsers: number;
+  maxUsers: number;
+  scheduledAt: string | null;
+  estimatedWaitMessage: string;
 }

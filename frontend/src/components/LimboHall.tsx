@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Taro from '@tarojs/taro';
 import { Canvas, Text, View } from '@tarojs/components';
 import Matter from 'matter-js';
@@ -26,12 +26,19 @@ export interface LimboHallProps {
   currentUserId?: string;
   heightPx?: number;
   onFragmentTap?: (fragment: LimboUserFragment) => void;
+  /** Callback when two fragments collide (碰撞确认) */
+  onCollisionRequest?: (self: LimboUserFragment, other: LimboUserFragment) => void;
 }
 
 const CANVAS_ID = 'limbo-hall-canvas';
 const DEFAULT_HEIGHT = 620;
-const MAX_GRAVITY = 0.85;
+/** Gyroscope now acts as ambient perturbation, not primary control */
+const AMBIENT_GRAVITY_SCALE = 0.25;
 const COLLISION_VIBRATION_COOLDOWN_MS = 140;
+/** Touch drag force multiplier */
+const DRAG_FORCE_SCALE = 0.0004;
+/** Ambient wind interval (ms) */
+const AMBIENT_WIND_INTERVAL_MS = 15000;
 
 const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
 
@@ -67,7 +74,7 @@ const createBodies = (fragments: LimboUserFragment[], width: number, height: num
       label: fragment.id,
       restitution: 0.94,
       friction: 0.015,
-      frictionAir: fragment.role === 'WATCHER' ? 0.05 : 0.018,
+      frictionAir: fragment.role === 'WATCHER' ? 0.05 : 0.022,
       density: 0.0012 + fragment.firePoints * 0.0001,
       isSensor: fragment.role === 'WATCHER'
     }) as FragmentBody;
@@ -121,7 +128,51 @@ const drawBody = (ctx: CanvasRenderingContext2D, body: FragmentBody, currentUser
   ctx.restore();
 };
 
-const drawFrame = (ctx: CanvasRenderingContext2D, bodies: FragmentBody[], width: number, height: number, currentUserId?: string) => {
+/** Draw onboarding hint overlay */
+const drawOnboardingHint = (ctx: CanvasRenderingContext2D, width: number, height: number, frame: number) => {
+  const alpha = Math.max(0, 1 - frame / 180); // Fade out over ~3 seconds at 60fps
+  if (alpha <= 0) return false; // Signal that onboarding is done
+
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.85;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.fillRect(0, 0, width, height);
+
+  // Draw hand gesture hint
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '600 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('👆 拖拽移动你的星球', width / 2, height / 2 - 20);
+  ctx.font = '400 13px sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('碰撞其他星球以发起命运连接', width / 2, height / 2 + 15);
+
+  // Animated arrow
+  const arrowY = height / 2 + 50 + Math.sin(frame * 0.05) * 8;
+  ctx.beginPath();
+  ctx.moveTo(width / 2 - 20, arrowY);
+  ctx.lineTo(width / 2 + 20, arrowY);
+  ctx.lineTo(width / 2 + 10, arrowY + 10);
+  ctx.moveTo(width / 2 + 20, arrowY);
+  ctx.lineTo(width / 2 + 10, arrowY - 10);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.restore();
+  return true; // Still showing
+};
+
+const drawFrame = (
+  ctx: CanvasRenderingContext2D,
+  bodies: FragmentBody[],
+  width: number,
+  height: number,
+  currentUserId?: string,
+  onboardingFrame?: number
+) => {
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, width, height);
@@ -143,13 +194,19 @@ const drawFrame = (ctx: CanvasRenderingContext2D, bodies: FragmentBody[], width:
   }
   ctx.restore();
   bodies.forEach((body) => drawBody(ctx, body, currentUserId));
+
+  // Draw onboarding overlay if applicable
+  if (onboardingFrame !== undefined && onboardingFrame < 180) {
+    drawOnboardingHint(ctx, width, height, onboardingFrame);
+  }
 };
 
 export const LimboHall: React.FC<LimboHallProps> = ({
   fragments,
   currentUserId,
   heightPx = DEFAULT_HEIGHT,
-  onFragmentTap
+  onFragmentTap,
+  onCollisionRequest
 }) => {
   const engineRef = useRef<Matter.Engine | null>(null);
   const runnerRef = useRef<number | NodeJS.Timeout | null>(null);
@@ -157,6 +214,12 @@ export const LimboHall: React.FC<LimboHallProps> = ({
   const bodiesRef = useRef<FragmentBody[]>([]);
   const latestCollisionAtRef = useRef(0);
   const activeFragments = useMemo(() => (fragments.length > 0 ? fragments : makeFallbackFragments()), [fragments]);
+
+  // Touch drag state
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const onboardingFrameRef = useRef(0);
+  const [showOnboarding, setShowOnboarding] = useState(true);
 
   const stopLoop = useCallback(() => {
     const canvasNode = canvasRef.current;
@@ -170,9 +233,15 @@ export const LimboHall: React.FC<LimboHallProps> = ({
     }
   }, []);
 
+  /** Find the current user's body */
+  const findCurrentUserBody = useCallback((): FragmentBody | undefined => {
+    return bodiesRef.current.find((b) => b.plugin.fragment.id === currentUserId);
+  }, [currentUserId]);
+
   useEffect(() => {
     let disposed = false;
     let accelerometerHandler: Taro.onAccelerometerChange.Callback | null = null;
+    let ambientWindTimer: NodeJS.Timeout | null = null;
 
     const setup = () => {
       const query = Taro.createSelectorQuery();
@@ -199,6 +268,7 @@ export const LimboHall: React.FC<LimboHallProps> = ({
           ctx.scale(runtime.pixelRatio, runtime.pixelRatio);
 
           const engine = Matter.Engine.create({ enableSleeping: false });
+          // Phase 0: Zero gravity by default; movement is user-driven
           engine.world.gravity.x = 0;
           engine.world.gravity.y = 0;
           engine.world.gravity.scale = 0.001;
@@ -208,22 +278,42 @@ export const LimboHall: React.FC<LimboHallProps> = ({
           bodiesRef.current = bodies;
           Matter.Composite.add(engine.world, [...createWalls(width, height), ...bodies]);
 
-          Matter.Events.on(engine, 'collisionStart', () => {
+          // Collision detection with confirmation callback
+          Matter.Events.on(engine, 'collisionStart', (event) => {
             const now = Date.now();
             if (now - latestCollisionAtRef.current > COLLISION_VIBRATION_COOLDOWN_MS) {
               latestCollisionAtRef.current = now;
               Taro.vibrateShort({ type: 'light' }).catch(() => undefined);
             }
+
+            // Check if current user is involved in collision
+            if (onCollisionRequest && currentUserId) {
+              for (const pair of event.pairs) {
+                const bodyA = pair.bodyA as FragmentBody;
+                const bodyB = pair.bodyB as FragmentBody;
+                if (!bodyA.plugin || !bodyB.plugin) continue;
+
+                const selfBody = bodyA.plugin.fragment.id === currentUserId ? bodyA
+                  : bodyB.plugin.fragment.id === currentUserId ? bodyB
+                  : null;
+                const otherBody = selfBody === bodyA ? bodyB : bodyA;
+
+                if (selfBody && otherBody && otherBody.plugin.fragment.role === 'ACTIVE') {
+                  onCollisionRequest(selfBody.plugin.fragment, otherBody.plugin.fragment);
+                }
+              }
+            }
           });
 
+          // Gyroscope as ambient perturbation (命运之风)
           accelerometerHandler = (res) => {
-            const gravityX = clamp(res.x || 0, -1, 1) * MAX_GRAVITY;
-            const gravityY = clamp(-(res.y || 0), -1, 1) * MAX_GRAVITY;
+            const gravityX = clamp(res.x || 0, -1, 1) * AMBIENT_GRAVITY_SCALE;
+            const gravityY = clamp(-(res.y || 0), -1, 1) * AMBIENT_GRAVITY_SCALE;
             engine.world.gravity.x = gravityX;
             engine.world.gravity.y = gravityY;
           };
 
-          Taro.startAccelerometer({ interval: 'game' })
+          Taro.startAccelerometer({ interval: 'normal' })
             .then(() => {
               if (accelerometerHandler) {
                 Taro.onAccelerometerChange(accelerometerHandler);
@@ -231,12 +321,35 @@ export const LimboHall: React.FC<LimboHallProps> = ({
             })
             .catch(() => undefined);
 
+          // Ambient wind: random force applied to all bodies periodically
+          ambientWindTimer = setInterval(() => {
+            if (disposed) return;
+            const windX = (Math.random() - 0.5) * 0.0008;
+            const windY = (Math.random() - 0.5) * 0.0008;
+            bodiesRef.current.forEach((body) => {
+              if (body.plugin.fragment.role !== 'WATCHER') {
+                Matter.Body.applyForce(body, body.position, { x: windX, y: windY });
+              }
+            });
+          }, AMBIENT_WIND_INTERVAL_MS);
+
           const tick = () => {
             if (disposed) {
               return;
             }
             Matter.Engine.update(engine, 1000 / 60);
-            drawFrame(ctx, bodiesRef.current, width, height, currentUserId);
+
+            // Increment onboarding frame
+            if (onboardingFrameRef.current < 180) {
+              onboardingFrameRef.current++;
+              if (onboardingFrameRef.current >= 180) {
+                setShowOnboarding(false);
+              }
+            }
+
+            drawFrame(ctx, bodiesRef.current, width, height, currentUserId,
+              showOnboarding ? onboardingFrameRef.current : undefined);
+
             if (node.requestAnimationFrame) {
               runnerRef.current = node.requestAnimationFrame(tick);
             }
@@ -260,6 +373,9 @@ export const LimboHall: React.FC<LimboHallProps> = ({
         Taro.offAccelerometerChange(accelerometerHandler);
       }
       Taro.stopAccelerometer().catch(() => undefined);
+      if (ambientWindTimer) {
+        clearInterval(ambientWindTimer);
+      }
       if (engineRef.current) {
         Matter.World.clear(engineRef.current.world, false);
         Matter.Engine.clear(engineRef.current);
@@ -267,12 +383,53 @@ export const LimboHall: React.FC<LimboHallProps> = ({
       engineRef.current = null;
       bodiesRef.current = [];
     };
-  }, [activeFragments, currentUserId, heightPx, stopLoop]);
+  }, [activeFragments, currentUserId, heightPx, stopLoop, onCollisionRequest, showOnboarding]);
 
-  const handleTap = useCallback((event: any) => {
+  // Touch drag handlers: user drags to apply force to their own body
+  const handleTouchStart = useCallback((event: any) => {
+    const touch = event.changedTouches?.[0] || event.touches?.[0] || event.detail;
+    const x = touch?.x ?? touch?.clientX;
+    const y = touch?.y ?? touch?.clientY;
+    if (typeof x !== 'number' || typeof y !== 'number') return;
+
+    // Dismiss onboarding on first touch
+    if (onboardingFrameRef.current < 180) {
+      onboardingFrameRef.current = 180;
+      setShowOnboarding(false);
+    }
+
+    dragStartRef.current = { x, y };
+    isDraggingRef.current = true;
+  }, []);
+
+  const handleTouchMove = useCallback((event: any) => {
+    if (!isDraggingRef.current || !dragStartRef.current) return;
+
+    const touch = event.changedTouches?.[0] || event.touches?.[0] || event.detail;
+    const x = touch?.x ?? touch?.clientX;
+    const y = touch?.y ?? touch?.clientY;
+    if (typeof x !== 'number' || typeof y !== 'number') return;
+
+    const currentBody = findCurrentUserBody();
+    if (!currentBody) return;
+
+    // Calculate drag vector and apply as force
+    const dx = (x - dragStartRef.current.x) * DRAG_FORCE_SCALE;
+    const dy = (y - dragStartRef.current.y) * DRAG_FORCE_SCALE;
+
+    Matter.Body.applyForce(currentBody, currentBody.position, { x: dx, y: dy });
+
+    // Update drag start for continuous movement
+    dragStartRef.current = { x, y };
+  }, [findCurrentUserBody]);
+
+  const handleTouchEnd = useCallback((event: any) => {
+    isDraggingRef.current = false;
+    dragStartRef.current = null;
+
+    // Also handle tap for fragment selection
     if (!onFragmentTap || !event) return;
 
-    // 🛠️ 修复：完美兼容微信小程序与 Web 端的坐标数据结构
     const touch = event.changedTouches?.[0] || event.touches?.[0] || event.detail;
     const x = touch?.x ?? touch?.clientX;
     const y = touch?.y ?? touch?.clientY;
@@ -281,7 +438,6 @@ export const LimboHall: React.FC<LimboHallProps> = ({
 
     const target = bodiesRef.current.find((body) => {
       const distance = Math.hypot(body.position.x - x, body.position.y - y);
-      // 🛠️ 修复：增加 15px 容错，防止手指太粗点不到精确半径
       return distance <= body.plugin.radius + 15;
     });
 
@@ -295,7 +451,7 @@ export const LimboHall: React.FC<LimboHallProps> = ({
     <View className='limbo-hall' style={{ height: `${heightPx}px` }}>
       <View className='limbo-hall__hud'>
         <Text className='limbo-hall__title'>LIMBO HALL</Text>
-        <Text className='limbo-hall__subtitle'>Tilt the device. Ghosts lose collision volume.</Text>
+        <Text className='limbo-hall__subtitle'>拖拽推动你的星球 · 碰撞即命运</Text>
       </View>
       <Canvas
         id={CANVAS_ID}
@@ -304,7 +460,9 @@ export const LimboHall: React.FC<LimboHallProps> = ({
         disableScroll
         className='limbo-hall__canvas'
         style={{ height: `${heightPx}px` }}
-        onTouchEnd={handleTap}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       />
     </View>
   );

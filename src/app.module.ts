@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { BoardingModule } from './boarding/boarding.module.js';
 import { ChronosModule } from './chronos/chronos.module.js';
+import { DailyEchoModule } from './daily-echo/daily-echo.module.js';
 import { Day30Module } from './day30/day30.module.js';
 import { EventsModule } from './events/events.module.js';
+import { MediaModule } from './media/media.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { RedisModule } from './redis/redis.module.js';
 import { YomiModule } from './yomi/yomi.module.js';
@@ -18,6 +21,9 @@ import { YomiModule } from './yomi/yomi.module.js';
     YomiModule,
     ChronosModule,
     Day30Module,
+    DailyEchoModule,
+    BoardingModule,
+    MediaModule,
   ],
 })
 export class AppModule {}

@@ -40,6 +40,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return { joined: roomChannel };
   }
 
+  // --- Matching Events ---
+
   emitMatchingSucceeded(roomId: string, payload: Record<string, unknown>): void {
     this.server.to(this.roomChannel(roomId)).emit('matching:succeeded', payload);
   }
@@ -47,6 +49,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitMatchingFailed(roomId: string, payload: Record<string, unknown>): void {
     this.server.to(this.roomChannel(roomId)).emit('matching:failed', payload);
   }
+
+  // --- Connection Lifecycle Events ---
 
   emitConnectionShattered(roomId: string, payload: Record<string, unknown>): void {
     this.server.to(this.roomChannel(roomId)).emit('connection:shattered', payload);
@@ -58,6 +62,36 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   emitChatModeUpdated(roomId: string, payload: Record<string, unknown>): void {
     this.server.to(this.roomChannel(roomId)).emit('chat:mode-updated', payload);
+  }
+
+  // --- Day 30 Events ---
+
+  emitDay30JudgmentResult(roomId: string, payload: Record<string, unknown>): void {
+    this.server.to(this.roomChannel(roomId)).emit('day30:judgment-result', payload);
+  }
+
+  // --- Phase 0: Daily Echo Events ---
+
+  /** Emitted when a daily echo prompt is created for a connection */
+  emitDailyEchoCreated(roomId: string, payload: Record<string, unknown>): void {
+    this.server.to(this.roomChannel(roomId)).emit('daily-echo:created', payload);
+  }
+
+  /** Emitted when both users have answered a daily echo */
+  emitDailyEchoCompleted(roomId: string, payload: Record<string, unknown>): void {
+    this.server.to(this.roomChannel(roomId)).emit('daily-echo:completed', payload);
+  }
+
+  // --- Phase 0: Boarding Events ---
+
+  /** Emitted when a boarding room's user count changes */
+  emitBoardingUpdate(roomId: string, payload: Record<string, unknown>): void {
+    this.server.to(this.roomChannel(roomId)).emit('boarding:update', payload);
+  }
+
+  /** Emitted when a boarding room transitions to RUNNING */
+  emitRoomDeparted(roomId: string, payload: Record<string, unknown>): void {
+    this.server.to(this.roomChannel(roomId)).emit('room:departed', payload);
   }
 
   private roomChannel(roomId: string): string {
