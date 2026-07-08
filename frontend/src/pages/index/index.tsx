@@ -53,7 +53,13 @@ const IndexPage: React.FC = () => {
           Advance Reveal Day: {connectedDays}
         </Button>
         <Button className='phase3-page__button' onClick={() => Taro.navigateTo({ url: '/pages/day30/index' })}>
-          Enter Day 30 Judgment
+          Enter Day 30 Judgment (STAY/PAUSE)
+        </Button>
+        <Button className='phase3-page__button' onClick={() => Taro.navigateTo({ url: '/pages/daily-echo/index' })}>
+          Daily Echo 每日回响
+        </Button>
+        <Button className='phase3-page__button' onClick={() => Taro.navigateTo({ url: '/pages/boarding/index' })}>
+          Boarding Hall 候车大厅
         </Button>
       </View>
 
@@ -67,6 +73,7 @@ const IndexPage: React.FC = () => {
       <GatingVideo
         src={SAMPLE_VIDEO}
         connectedDays={connectedDays}
+        revealLevel={connectedDays <= 6 ? 'SILHOUETTE' : connectedDays <= 14 ? 'FROSTED' : connectedDays <= 29 ? 'NEAR' : 'FULL'}
         title='Connected Shadow'
         autoplay={false}
         muted

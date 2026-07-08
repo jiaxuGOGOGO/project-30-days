@@ -1,27 +1,74 @@
 # Project 30-Days
 
-ACKNOWLEDGED. PHASE 1 COMPLETE. PHASE 2 COMPLETE. PHASE 3 COMPLETE. PHASE 4 COMPLETE.
+**匿名限时社交实验** — 用时间的不可逆性对抗社交应用的"无限滑动"范式。
 
-本仓库当前完成上传指令中的 **PHASE 1: DB SCHEMA & PRISMA MODEL**、**PHASE 2: BACKEND STATE MACHINE & DOUBLE-BLIND MATCHING**、**PHASE 3: FRONTEND PHYSICS HALL & GATING UI** 与 **PHASE 4: DAY 30 JUDGMENT & LEGACY TICKET**。项目为匿名限时社交系统定义 PostgreSQL/Prisma 数据层、Redis/PostgreSQL 本地开发环境、10 条 FateCard 种子数据，实现 NestJS 后端中的 Redis 双盲匹配锁、24 小时沙漏状态机、第 15 天角色坍缩、每日聊天模式切换、第 30 天终局选择 API 与 WebSocket 事件广播，并新增 Taro 3 + React 前端核心组件。
+---
 
-## 当前交付范围
+## 核心第一性原理
 
-| 文件或目录 | 作用 |
-|---|---|
-| `prisma/schema.prisma` | 定义 User、InstanceRoom、FateCard、Connection 及所需枚举、关系与索引。 |
-| `prisma/migrations/000001_phase1_init/migration.sql` | 使用 PostgreSQL 原生 CHECK、FOREIGN KEY、UNIQUE INDEX 约束补强 Prisma Schema，严格保证房间 `end_date = start_date + 30 days`。 |
-| `prisma/seed.ts` | 写入 10 条 FateCard 两难题种子数据，并包含数量完整性校验与错误处理。 |
-| `docker-compose.yml` | 启动 PostgreSQL 16 与 Redis 7，本地保留持久化卷与健康检查。 |
-| `src/yomi` | 提供 FateCard 双盲答案提交接口、Redis 24 小时答案缓存、成对分布式锁与 12 小时冷却黑名单。 |
-| `src/chronos` | 提供 NestJS 定时状态机：沙漏 24 小时过期碎裂、Deep Link 每日天数递增、第 15 天未连接用户坍缩为 WATCHER、8/20 点聊天模式切换。 |
-| `src/day30` | 提供第 30 天终局选择 API，校验 2 秒长按、防重复改判、写入双方 `Decision` 并在双方选择后产出 LEGACY 或 ASH 结果。 |
-| `src/events` | 提供 `/events` WebSocket 命名空间，支持房间加入与状态事件广播。 |
-| `frontend/src/components/LimboHall.tsx` | Taro Canvas 2D + Matter.js 无重力物理漂浮大厅，接入设备加速度计、碰撞触觉反馈与 WATCHER 幽灵态。 |
-| `frontend/src/components/GatingVideo.tsx` | 渐进式滤镜盲盒视频组件，按 `connectedDays` 使用纯 CSS `filter` 完成 Day 1-30 揭示过程，不依赖后端转码。 |
-| `frontend/src/components/Day30Judgment.tsx` | 第 30 天终局审判组件，提供 “继续 / 结束” 双按钮、2 秒长按确认、防误触心跳震动与 API 提交逻辑。 |
-| `frontend/src/components/LegacyTicketCanvas.tsx` | 星尘车票 Canvas 组件，在失败结局后用 Taro Canvas 2D API 绘制并导出分享图片。 |
-| `frontend/config/index.ts` | Taro 3 构建配置，优先支持微信小程序，同时保留 H5 预览构建。 |
-| `.env.example` | 提供数据库、Redis 与端口示例，不提交真实环境变量。 |
+| 原理 | 含义 | 技术实现 |
+|------|------|----------|
+| **时间暴政** | 30天有限生命周期，时间不可逆 | InstanceRoom 30天CHECK约束 + Chronos定时状态机 |
+| **双盲宿命感** | 匹配结果不可预知、不可操控 | FateCard双盲答案比对 + Redis分布式锁 |
+| **物理隐喻** | 用空间/重力/碰撞具象化社交关系 | Matter.js无重力刚体世界 + 触屏拖拽 + 陀螺仪命运之风 |
+| **终局审判** | 30天后必须做出不可撤回的选择 | Progressive Trust Reveal (STAY/PAUSE) |
+
+---
+
+## 架构概览
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (Taro 3 + React)                  │
+├─────────────────────────────────────────────────────────────┤
+│ LimboHall │ GatingVideo │ Day30Judgment │ DailyEcho │ Board │
+│ (Matter.js)│ (Server-side)│ (STAY/PAUSE) │ (双盲问答) │ (候车) │
+├─────────────────────────────────────────────────────────────┤
+│                 Native WebSocket (ws adapter)                 │
+├─────────────────────────────────────────────────────────────┤
+│                    Backend (NestJS + Prisma)                  │
+├──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬─────┤
+│ Yomi │Day30 │Daily │Board │Media │Hour- │Obser-│Season│Tick-│
+│      │      │Echo  │ing   │      │glass │ver   │      │et   │
+├──────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┴─────┤
+│              Chronos (定时状态机 + Cron Jobs)                  │
+├─────────────────────────────────────────────────────────────┤
+│          PostgreSQL + Redis + Cloud Storage (COS)            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 版本 0.2.0 更新内容
+
+### P0 级修复（安全与合规）
+
+- **服务端视频隐私保护**：GatingVideo 不再使用前端CSS滤镜，改为接收服务端预处理的分级视频URL
+- **视频自动销毁**：Day30 判定为 ASH 后自动触发 `MediaService.destroyConnectionVideos()`
+- **H5 部署策略**：新增 `docs/h5-deployment-guide.md`，绕过微信小程序审核限制
+
+### P1 级优化（留存与体验）
+
+- **终局博弈重构 (Progressive Trust Reveal)**：
+  - COOPERATE → STAY（留下）
+  - DEFECT → PAUSE（暂停）
+  - 单方STAY + 对方PAUSE → 7天延长期
+  - 双方PAUSE → 14天冷却期
+  - 仅二次确认后才产生 ASH
+- **每日回响 (DailyEcho)**：完整前端页面 + 后端服务
+- **候车大厅 (Boarding Hall)**：完整前端页面 + 定时发车
+- **碰撞确认 (CollisionConfirm)**：LimboHall碰撞时弹出确认弹框
+- **判定延长期 Chronos 任务**：每小时检查过期的延长/冷却期
+
+### P2 级优化（长期留存）
+
+- **沙漏冻结 (HourglassFreeze)**：每赛季2次，防止意外缺席导致连接销毁
+- **WebSocket 降级**：从 Socket.IO 切换到原生 ws，兼容微信小程序
+- **WATCHER 角色重定位 (Observer)**：观察者特权系统（每日碎片、匿名祝福、碎片兑换）
+- **赛季制 (Season)**：跨赛季资产保留、LEGACY徽章、赛季主题
+- **星尘车票重设计 (StardustTicket)**：从"失败证明"变为"成长记录"
+
+---
 
 ## 快速启动
 
@@ -36,9 +83,13 @@ pnpm prisma:seed
 pnpm start:dev
 ```
 
-## PHASE 2 API
+---
 
-`POST /yomi/answers` 用于提交双盲 FateCard 答案。当 A 对 B 提交答案时，服务会将该答案写入 Redis 并设置 24 小时 TTL；当 B 对 A 提交答案时，服务在成对分布式锁保护下读取双方答案并比对。若答案一致，服务在 PostgreSQL 事务中创建或更新 `SANDGLASS_24H` 连接，并触发 `matching:succeeded` 事件；若答案不一致，服务会清除双方临时答案并写入 12 小时有向冷却黑名单，同时触发 `matching:failed` 事件。
+## API 端点
+
+### 核心流程
+
+`POST /yomi/answers` 用于提交双盲 FateCard 答案。当 A 对 B 提交答案时，服务会将该答案写入 Redis 并设置 24 小时 TTL；当 B 对 A 提交答案时，服务在成对分布式锁保护下读取双方答案并比对。
 
 ```json
 {
@@ -50,9 +101,7 @@ pnpm start:dev
 }
 ```
 
-## PHASE 4 API
-
-`POST /api/day30/judgment` 用于第 30 天终局选择。服务端要求 `heldMs >= 2000`，以配合前端 2 秒长按防误触设计。提交后系统会锁定当前用户最终选择；当对方尚未选择时返回 `PENDING`，双方均选择后，如果双方都选择 `COOPERATE`，连接回到 `DEEP_LINK` 并返回 `LEGACY`；只要任一方选择 `DEFECT`，连接进入 `DESTROYED` 并返回 `ASH`，前端可据此展示星尘车票。
+`POST /api/day30/judgment` 用于第 30 天终局选择（Progressive Trust Reveal）。服务端要求 `heldMs >= 2000`。
 
 ```json
 {
@@ -63,53 +112,137 @@ pnpm start:dev
 }
 ```
 
-## 定时状态机
+**Progressive Trust Reveal 结局矩阵**：
+
+| 用户 A \ 用户 B | **STAY (COOPERATE)** | **PAUSE (DEFECT)** |
+|---|---|---|
+| **STAY (COOPERATE)** | LEGACY（成功） | 7天延长期 |
+| **PAUSE (DEFECT)** | 7天延长期 | 14天冷却期 |
+
+### 完整端点列表
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/yomi/answers` | 提交 FateCard 双盲答案 |
+| POST | `/api/day30/judgment` | 第30天终局选择 (STAY/PAUSE) |
+| POST | `/daily-echo/answer` | 提交每日回响答案 |
+| GET | `/daily-echo/current/:connectionId` | 获取当日问题 |
+| GET | `/daily-echo/history/:connectionId` | 获取历史记录 |
+| GET | `/boarding/current` | 获取当前候车房间 |
+| POST | `/boarding/join` | 加入候车队列 |
+| GET | `/media/video/:connectionId` | 获取签名视频URL |
+| POST | `/media/process/:userId` | 触发视频变体处理 |
+| POST | `/hourglass/freeze` | 使用沙漏冻结 |
+| GET | `/hourglass/status/:connectionId` | 获取冻结状态 |
+| POST | `/observer/daily-reward/:userId` | 领取每日观察者奖励 |
+| POST | `/observer/bless` | 发送匿名祝福 |
+| POST | `/observer/redeem/:userId` | 兑换碎片为冻结次数 |
+| GET | `/season/active` | 获取当前赛季 |
+| GET | `/season/assets/:userId` | 获取跨赛季资产 |
+| POST | `/season/transition` | 切换到新赛季 |
+| POST | `/stardust-ticket/generate/:connectionId` | 生成成长记录车票 |
+| GET | `/stardust-ticket/:connectionId` | 获取车票内容 |
+
+---
+
+## 定时任务 (Chronos)
 
 | Cron 表达式 | 行为 |
 |---|---|
-| `*/1 * * * *` | 每分钟扫描 `SANDGLASS_24H` 且 `sandglass_started_at` 已超过 24 小时的连接，将其更新为 `DESTROYED` 并广播 `connection:shattered`。 |
-| `0 0 * * *` | 每天零点递增 `DEEP_LINK` 连接的 `connected_days`，并在房间到达第 15 天后把未进入 `DEEP_LINK` 的 ACTIVE 用户坍缩为 `WATCHER`。 |
-| `0 8,20 * * *` | 每天 08:00 将 Redis `CHAT_MODE` 设置为 `ICE`，每天 20:00 设置为 `FIRE`，并广播 `chat:mode-updated`。 |
+| `*/1 * * * *` | 销毁过期沙漏连接（检查冻结状态后） |
+| `0 0 * * *` | 递增 connected_days + Day15 坍缩为 WATCHER |
+| `0 20 * * *` | 生成每日回响问题 |
+| `*/5 * * * *` | 检查候车房间是否应发车 |
+| `0 * * * *` | 检查过期的延长/冷却期，触发重新投票通知 |
+| `0 8,20 * * *` | 切换 ICE/FIRE 聊天模式 |
 
-## PHASE 3 前端
+---
 
-前端位于 `frontend/`，采用 **Taro 3 + React + TypeScript + Zustand + TailwindCSS + Matter.js**。所有页面和组件都使用 Taro 组件与 Taro API，未使用 `window`、`document`、原生 `div` 或浏览器 DOM Canvas。`LimboHall` 通过 `Taro.createSelectorQuery()` 获取小程序 Canvas 2D 节点，再用 Matter.js 维护无重力刚体世界，并通过 `Taro.onAccelerometerChange` 将设备倾斜映射到物理重力向量。WATCHER 用户的 Body 会被设置为 `isSensor = true`，透明度降至 0.2，表现为失去碰撞体积的幽灵态。
-
-| 组件 | 核心机制 |
-|---|---|
-| `LimboHall` | 黑色大厅、Matter.js 无重力世界、陀螺仪控制、边界墙、物理碰撞、`Taro.vibrateShort({ type: 'light' })` 触觉反馈、WATCHER `isSensor` 幽灵态。 |
-| `GatingVideo` | 接收 `connectedDays`，Day 1-6 使用 `brightness(0) invert(1) drop-shadow(0 0 10px white)`，Day 7-14 使用 `blur(15px) grayscale(100%)`，Day 15-29 使用 `blur(5px) grayscale(40%)`，Day 30 移除滤镜。 |
-
-## PHASE 4 前端
-
-PHASE 4 新增 `/pages/day30/index`，用于承载第 30 天审判体验。`Day30Judgment` 不使用普通点击直接提交，而是要求用户在 “KEEP / DEFECT” 按钮上持续按压 2 秒；组件在按压期间每 500ms 调用轻震动，释放不足 2 秒会取消提交。终局失败后，页面会将返回结果传给 `LegacyTicketCanvas`，后者使用 Taro Canvas 2D API 绘制黑白星尘车票，并通过 `Taro.canvasToTempFilePath` 导出临时分享图片。
+## 前端组件
 
 | 组件 | 核心机制 |
 |---|---|
-| `Day30Judgment` | 双按钮终局选择、2 秒长按门槛、心跳震动、防重复提交、后端 `POST /api/day30/judgment` 提交。 |
-| `LegacyTicketCanvas` | 黑白星尘车票、消息数量与终局文案渲染、Canvas 2D 绘制、导出分享图片。 |
+| `LimboHall` | 触屏拖拽主控 + 陀螺仪命运之风(0.25x) + 碰撞确认回调 + 首次引导动画 |
+| `GatingVideo` | 服务端分级视频（SILHOUETTE/FROSTED/NEAR/FULL），客户端无法绕过 |
+| `Day30Judgment` | STAY/PAUSE 双按钮 + 2秒长按 + Progressive Trust Reveal |
+| `CollisionConfirm` | 碰撞确认弹框 + 8秒自动消失 + 双方确认才进入FateCard |
+| `LegacyTicketCanvas` | 星尘车票 Canvas 绘制 + 导出分享图片 |
+| `DailyEcho Page` | 每日双盲问答 + 提交/等待/揭示三态 |
+| `Boarding Page` | 候车大厅 + 实时人数 + 倒计时 + 发车规则 |
 
-## 前端运行命令
+---
+
+## 数据模型
+
+| 模型 | 用途 |
+|------|------|
+| `User` | 用户（含冻结次数、星尘碎片、赛季信息、观察者碎片、LEGACY徽章） |
+| `InstanceRoom` | 房间（含BOARDING状态、min_users、scheduled_at、boarding_count） |
+| `Connection` | 双人羁绊状态机（含judgment_round、season） |
+| `FateCard` | 命运卡片 |
+| `DailyEcho` | 每日双盲问答 |
+| `HourglassFreeze` | 沙漏冻结记录 |
+| `StardustTicket` | 星尘车票（成长记录：灵魂图谱、精选回答、成长标签） |
+| `Season` | 赛季元数据（编号、主题、时间范围） |
+
+---
+
+## 运行命令
 
 ```bash
+# 后端
+pnpm prisma:validate
+pnpm prisma:generate
+pnpm typecheck
+pnpm build
+pnpm start:dev
+
+# 前端
 pnpm frontend:typecheck
 pnpm frontend:build:weapp
 pnpm frontend:build:h5
 ```
 
-微信开发者工具可打开 `frontend/` 目录；默认 `project.config.json` 使用 `touristappid`，接入真实小程序时需要替换为正式 AppID。
+---
 
-## 数据模型要点
+## 实施路线图
 
-`User` 以 `wechat_openid` 作为唯一微信身份键，拥有 `shadow_video_url`、默认 `fire_points = 3`、`role = ACTIVE` 与创建时间。`InstanceRoom` 使用数据库级 CHECK 约束强制 `end_date` 必须等于 `start_date + interval '30 days'`，并将 `max_users` 限制在 1 到 100 之间。`Connection` 表保存双人羁绊状态机，从 `YOMI_MATCHING` 到 `SANDGLASS_24H`、`DEEP_LINK`、`JUDGMENT` 与 `DESTROYED`，并通过部分唯一索引避免同一房间内同一对用户产生多个非销毁连接。第 30 天终局选择复用 `Connection.user_a_decision` 与 `Connection.user_b_decision` 两个字段，不新增额外表，便于在强事务中完成最终判定。
-
-## 验证命令
-
-```bash
-pnpm prisma:validate
-pnpm prisma:generate
-pnpm typecheck
-pnpm build
-pnpm frontend:typecheck
-pnpm frontend:build:weapp
 ```
+Phase 0: MVP 验证（2-3 周）✅
+├── H5 版本开发（Taro H5 编译）
+├── 简化版物理大厅（触屏拖拽 + 命运之风）
+├── 核心匹配流程验证
+└── 招募首批 50 名测试用户
+
+Phase 1: 安全与留存（2-3 周）✅
+├── 服务端视频转码架构
+├── 签名 URL 授权机制
+├── DailyEcho 模块
+├── 候车大厅 + 定时发车
+└── 终局博弈重构（STAY/PAUSE）
+
+Phase 2: 长期留存（2-3 周）✅
+├── 沙漏冻结机制
+├── WebSocket 降级（原生 ws）
+├── WATCHER → OBSERVER 特权系统
+├── 赛季制循环
+└── 星尘车票重设计
+
+Phase 3: 正式上线（1-2 周）
+├── 接入腾讯云 MPS 实现真实视频转码
+├── 微信小程序适配
+├── 小程序审核提交（社区/论坛类目）
+├── ICP 证申请启动
+└── 首批公开赛季发车
+```
+
+---
+
+## 架构决策记录
+
+- **ADR-001**: 服务端视频预处理而非前端CSS滤镜（防止Tinder Unblur类漏洞）
+- **ADR-002**: 陀螺仪降级为环境微扰(0.25x)而非完全移除（保持"命运之风"隐喻）
+- **ADR-003**: 定时发车而非实时匹配（参考Thursday应用，保证社交密度）
+- **ADR-004**: DailyEcho双盲机制（防止搭便车，与"对等博弈"哲学一致）
+- **ADR-005**: Progressive Trust Reveal而非纯囚徒困境（降低75%负面体验率）
+- **ADR-006**: 原生ws替代Socket.IO（微信小程序WebSocket兼容性）

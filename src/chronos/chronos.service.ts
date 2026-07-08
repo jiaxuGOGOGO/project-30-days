@@ -4,6 +4,7 @@ import { Connection, ConnectionStatus, Prisma, RoomStatus, UserRole } from '@pri
 import { BoardingService } from '../boarding/boarding.service.js';
 import { DailyEchoService } from '../daily-echo/daily-echo.service.js';
 import { EventsGateway } from '../events/events.gateway.js';
+import { HourglassService } from '../hourglass/hourglass.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { RedisService } from '../redis/redis.service.js';
 
@@ -19,6 +20,7 @@ export class ChronosService {
     private readonly eventsGateway: EventsGateway,
     private readonly dailyEchoService: DailyEchoService,
     private readonly boardingService: BoardingService,
+    private readonly hourglassService: HourglassService,
   ) {}
 
   /**
@@ -38,6 +40,13 @@ export class ChronosService {
     });
 
     for (const connection of expiredConnections) {
+      // P2: Check if connection has an active hourglass freeze
+      const isFrozen = await this.hourglassService.isConnectionFrozenToday(connection.id);
+      if (isFrozen) {
+        this.logger.debug(`Connection ${connection.id} is frozen today, skipping destruction`);
+        continue;
+      }
+
       const destroyed = await this.destroySandglassConnection(connection.id);
       if (destroyed) {
         this.eventsGateway.emitConnectionShattered(destroyed.room_id, {
@@ -105,6 +114,42 @@ export class ChronosService {
   @Cron('*/5 * * * *')
   async checkBoardingDepartures(): Promise<void> {
     await this.boardingService.checkAndDepartScheduledRooms();
+  }
+
+  /**
+   * Every hour: check for expired extension/cooldown periods and trigger re-vote.
+   * P1: Progressive Trust Reveal — after extension (7d) or cooldown (14d) expires,
+   * notify both users that they can re-vote.
+   */
+  @Cron('0 * * * *')
+  async checkExpiredJudgmentExtensions(): Promise<void> {
+    const now = new Date();
+    // Find JUDGMENT connections where judgment_started_at is in the past
+    // (meaning extension/cooldown period has expired and re-vote is available)
+    const expiredExtensions = await this.prisma.connection.findMany({
+      where: {
+        status: ConnectionStatus.JUDGMENT,
+        judgment_started_at: { lte: now },
+        user_a_decision: 'NULL',
+        user_b_decision: 'NULL',
+        destroyed_at: null,
+      },
+      take: 100,
+    });
+
+    for (const connection of expiredExtensions) {
+      this.eventsGateway.emitJudgmentExtension(connection.room_id, {
+        connectionId: connection.id,
+        roomId: connection.room_id,
+        event: 'RE_VOTE_AVAILABLE',
+        message: '延长期已结束，请重新做出选择',
+        availableAt: now.toISOString(),
+      });
+    }
+
+    if (expiredExtensions.length > 0) {
+      this.logger.log(`Chronos: ${expiredExtensions.length} judgment extensions expired, re-vote available`);
+    }
   }
 
   /**

@@ -10,6 +10,8 @@ datasource db {
 enum UserRole {
   ACTIVE
   WATCHER
+  /// OBSERVER: Upgraded WATCHER with special privileges (P2)
+  OBSERVER
 
   @@map("user_role")
 }
@@ -59,10 +61,22 @@ model User {
   role             UserRole     @default(ACTIVE)
   /// Tracks when video assets were destroyed (for compliance audit)
   video_destroyed_at DateTime?  @db.Timestamptz(6)
+  /// P2: Hourglass freezes remaining this season (default 2)
+  freeze_remaining Int          @default(2)
+  /// P2: Stardust fragments accumulated across seasons
+  stardust_fragments Int        @default(0)
+  /// P2: Current season number the user is participating in
+  current_season   Int          @default(1)
+  /// P2: Whether user achieved LEGACY in previous season (glow effect)
+  legacy_badge     Boolean      @default(false)
+  /// P2: Observer fragments accumulated while in WATCHER/OBSERVER role
+  observer_fragments Int        @default(0)
   created_at       DateTime     @default(now()) @db.Timestamptz(6)
 
   connections_as_a Connection[] @relation("ConnectionUserA")
   connections_as_b Connection[] @relation("ConnectionUserB")
+  hourglass_freezes HourglassFreeze[]
+  stardust_tickets  StardustTicket[]
 
   @@index([role])
   @@index([created_at])
@@ -117,6 +131,10 @@ model Connection {
   deep_link_started_at DateTime?        @db.Timestamptz(6)
   judgment_started_at  DateTime?        @db.Timestamptz(6)
   destroyed_at         DateTime?        @db.Timestamptz(6)
+  /// P1: Tracks judgment round (1 = first, 2 = after extension/cooldown)
+  judgment_round       Int              @default(1)
+  /// P2: Season number this connection belongs to
+  season               Int              @default(1)
   created_at           DateTime         @default(now()) @db.Timestamptz(6)
   updated_at           DateTime         @updatedAt @db.Timestamptz(6)
 
@@ -124,12 +142,15 @@ model Connection {
   user_b User         @relation("ConnectionUserB", fields: [user_b_id], references: [id], onDelete: Cascade)
   room   InstanceRoom @relation(fields: [room_id], references: [id], onDelete: Cascade)
   daily_echoes DailyEcho[]
+  hourglass_freezes HourglassFreeze[]
+  stardust_tickets  StardustTicket[]
 
   @@index([room_id, status])
   @@index([user_a_id, room_id, status])
   @@index([user_b_id, room_id, status])
   @@index([status, sandglass_started_at])
   @@index([status, connected_days])
+  @@index([season])
   @@map("connections")
 }
 
@@ -152,4 +173,69 @@ model DailyEcho {
   @@unique([connection_id, day_number])
   @@index([connection_id, both_answered])
   @@map("daily_echoes")
+}
+
+/// P2: Hourglass Freeze — allows users to pause the 24h sandglass timer.
+/// Each user gets 2 freezes per season. Cannot accumulate across seasons.
+model HourglassFreeze {
+  id            String   @id @default(uuid()) @db.Uuid
+  user_id       String   @db.Uuid
+  connection_id String   @db.Uuid
+  /// The day number when freeze was used
+  used_on_day   Int
+  /// Season in which this freeze was used
+  season        Int      @default(1)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  connection Connection @relation(fields: [connection_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, season])
+  @@index([connection_id])
+  @@map("hourglass_freezes")
+}
+
+/// P2: Stardust Ticket — redesigned as a "growth record" rather than failure proof.
+/// Contains personality insights, best DailyEcho answers, and connection statistics.
+model StardustTicket {
+  id              String   @id @default(uuid()) @db.Uuid
+  user_id         String   @db.Uuid
+  connection_id   String   @db.Uuid
+  /// Season this ticket belongs to
+  season          Int      @default(1)
+  /// Final outcome: LEGACY or ASH
+  outcome         String   @db.VarChar(16)
+  /// Number of days both users participated
+  participated_days Int    @default(0)
+  /// Number of DailyEcho exchanges completed
+  echo_count      Int      @default(0)
+  /// AI-generated personality tags based on choices (JSON array)
+  growth_tags     String   @default("[]") @db.Text
+  /// Top 3 DailyEcho answers selected for the ticket (JSON array)
+  highlight_answers String @default("[]") @db.Text
+  /// Soul graph summary text
+  soul_summary    String?  @db.Text
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  connection Connection @relation(fields: [connection_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, connection_id])
+  @@index([user_id, season])
+  @@map("stardust_tickets")
+}
+
+/// P2: Season — tracks global season metadata for the seasonal cycle system.
+model Season {
+  id            String   @id @default(uuid()) @db.Uuid
+  season_number Int      @unique
+  /// Theme for this season's FateCards
+  theme         String   @db.VarChar(128)
+  starts_at     DateTime @db.Timestamptz(6)
+  ends_at       DateTime @db.Timestamptz(6)
+  is_active     Boolean  @default(false)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([is_active])
+  @@map("seasons")
 }

@@ -32,18 +32,26 @@ interface ChoiceMeta {
   warning: string;
 }
 
+/**
+ * Progressive Trust Reveal:
+ * - COOPERATE = STAY (留下) — commit to the connection
+ * - DEFECT = PAUSE (暂停) — not ready yet, request extension
+ *
+ * First round: PAUSE triggers 7-day extension (one side) or 14-day cooldown (both).
+ * Second round: PAUSE triggers final ASH.
+ */
 const CHOICES: ChoiceMeta[] = [
   {
-    choice: 'DEFECT',
-    label: '保留防御 DEFECT',
-    subtitle: 'Keep the last wall standing.',
-    warning: 'This preserves the armor, but may turn the shared key into ash.'
+    choice: 'COOPERATE',
+    label: '留下 STAY',
+    subtitle: '交出最后的钥匙，选择信任。',
+    warning: '如果对方也选择留下，你们将进入 LEGACY。如果对方暂停，将进入 7 天延长期。'
   },
   {
-    choice: 'COOPERATE',
-    label: '交出钥匙 COOPERATE',
-    subtitle: 'Hand over the final key.',
-    warning: 'This removes the final defense and asks the other side to do the same.'
+    choice: 'DEFECT',
+    label: '暂停 PAUSE',
+    subtitle: '还没准备好，需要更多时间。',
+    warning: '如果对方选择留下，将进入 7 天延长期。如果双方都暂停，将进入 14 天冷却期。'
   }
 ];
 
@@ -94,12 +102,21 @@ export const Day30Judgment: React.FC<Day30JudgmentProps> = ({
 
     try {
       if (debugCounterpartDecision) {
+        // Progressive Trust Reveal debug logic
+        let debugOutcome: Day30JudgmentResult['outcome'];
+        if (choice === 'COOPERATE' && debugCounterpartDecision === 'COOPERATE') {
+          debugOutcome = 'LEGACY';
+        } else if (choice === 'DEFECT' && debugCounterpartDecision === 'DEFECT') {
+          debugOutcome = 'COOLDOWN';
+        } else {
+          debugOutcome = 'EXTENSION';
+        }
         const nextResult: Day30JudgmentResult = {
-          outcome: choice === 'COOPERATE' && debugCounterpartDecision === 'COOPERATE' ? 'LEGACY' : 'ASH',
+          outcome: debugOutcome,
           msgCount,
-          ticketTitle: choice === 'COOPERATE' && debugCounterpartDecision === 'COOPERATE'
-            ? 'Mutual Key Legacy'
-            : 'Single-Sided Ash Ticket'
+          ticketTitle: debugOutcome === 'LEGACY' ? 'Mutual Key Legacy' : undefined,
+          extensionEndsAt: debugOutcome === 'EXTENSION' ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
+          cooldownEndsAt: debugOutcome === 'COOLDOWN' ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() : undefined,
         };
         setResult(nextResult);
         onSubmitted?.(nextResult);
@@ -126,8 +143,15 @@ export const Day30Judgment: React.FC<Day30JudgmentProps> = ({
       };
       setResult(nextResult);
       onSubmitted?.(nextResult);
+      const toastMessages: Record<string, string> = {
+        LEGACY: '双方留下 — LEGACY 解锁',
+        ASH: '连接化为灰烬',
+        EXTENSION: '进入 7 天延长期',
+        COOLDOWN: '进入 14 天冷却期',
+        PENDING: '等待对方选择...',
+      };
       await Taro.showToast({
-        title: nextResult.outcome === 'ASH' ? 'Key turned to ash' : 'Legacy unlocked',
+        title: toastMessages[nextResult.outcome] ?? nextResult.outcome,
         icon: 'none',
         duration: 1500
       });
@@ -234,8 +258,23 @@ export const Day30Judgment: React.FC<Day30JudgmentProps> = ({
       {submitting ? <Text className='day30-judgment__status'>Submitting final judgment to API...</Text> : null}
       {result ? (
         <View className='day30-judgment__result'>
-          <Text className='day30-judgment__result-title'>Outcome: {result.outcome}</Text>
-          <Text className='day30-judgment__result-copy'>Soul echoes counted: {result.msgCount}</Text>
+          <Text className='day30-judgment__result-title'>结局: {result.outcome}</Text>
+          {result.outcome === 'EXTENSION' && result.extensionEndsAt ? (
+            <Text className='day30-judgment__result-copy'>
+              对方还没准备好。7 天延长期后可再次选择。
+            </Text>
+          ) : null}
+          {result.outcome === 'COOLDOWN' && result.cooldownEndsAt ? (
+            <Text className='day30-judgment__result-copy'>
+              双方都需要更多时间。14 天冷却期后再次选择。
+            </Text>
+          ) : null}
+          {result.outcome === 'LEGACY' ? (
+            <Text className='day30-judgment__result-copy'>双方信任达成 — 连接永存。</Text>
+          ) : null}
+          {result.outcome === 'ASH' ? (
+            <Text className='day30-judgment__result-copy'>延长期后仍未达成共识 — 各自远行。</Text>
+          ) : null}
         </View>
       ) : null}
 

@@ -1,0 +1,128 @@
+.collision-confirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collision-confirm__backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.collision-confirm__panel {
+  position: relative;
+  width: 600px;
+  background: rgba(15, 15, 15, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 40px 36px;
+  text-align: center;
+}
+
+.collision-confirm__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.collision-confirm__title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+.collision-confirm__countdown {
+  font-size: 26px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: bold;
+}
+
+.collision-confirm__bodies {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  gap: 20px;
+}
+
+.collision-confirm__body {
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collision-confirm__body--self {
+  background: rgba(56, 189, 248, 0.2);
+  border: 2px solid rgba(56, 189, 248, 0.5);
+}
+
+.collision-confirm__body--other {
+  background: rgba(248, 113, 113, 0.2);
+  border: 2px solid rgba(248, 113, 113, 0.5);
+}
+
+.collision-confirm__body-name {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.collision-confirm__collision-icon {
+  font-size: 36px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.collision-confirm__question {
+  display: block;
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 32px;
+}
+
+.collision-confirm__actions {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.collision-confirm__btn {
+  flex: 1;
+  height: 80px;
+  border-radius: 40px;
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.collision-confirm__btn--confirm {
+  background: rgba(56, 189, 248, 0.2);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #38bdf8;
+}
+
+.collision-confirm__btn--dismiss {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.collision-confirm__hint {
+  display: block;
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.35);
+}
