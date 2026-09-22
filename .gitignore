@@ -15,3 +15,6 @@ pnpm-debug.log*
 frontend/dist/
 
 frontend/.swc/
+
+# Per-run disposable local checks and shareable reports
+.local-check/

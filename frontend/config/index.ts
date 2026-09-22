@@ -16,14 +16,16 @@ const config: UserConfigExport = {
     828: 1.81 / 2
   },
   sourceRoot: 'src',
-  outputRoot: 'dist',
+  outputRoot: `dist/${process.env.TARO_ENV || 'weapp'}`,
   framework: 'react',
   compiler: 'webpack5',
   plugins: ['@tarojs/plugin-framework-react'],
   cache: {
     enable: false
   },
-  defineConstants: {},
+  defineConstants: {
+    'process.env.TARO_APP_API_BASE': JSON.stringify(process.env.TARO_APP_API_BASE || '')
+  },
   copy: {
     patterns: [],
     options: {}

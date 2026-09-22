@@ -1,5 +1,5 @@
 {
-  "miniprogramRoot": "dist/",
+  "miniprogramRoot": "dist/weapp/",
   "projectname": "project-30-days",
   "description": "Project 30-Days Taro 3 frontend for WeChat Mini Program and H5 preview.",
   "appid": "touristappid",

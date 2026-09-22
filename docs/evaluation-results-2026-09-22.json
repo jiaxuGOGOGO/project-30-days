@@ -1,0 +1,4080 @@
+{
+  "schemaVersion": 1,
+  "auditBaseline": "f8aa180",
+  "date": "2026-09-22",
+  "environment": {
+    "node": "22.23.2",
+    "postgres": "16.14",
+    "dbConnectionPool": 10,
+    "memoryLimitApproxGiB": 4,
+    "host": "Linux x86_64"
+  },
+  "sourceHashes": {
+    "test/social-simulation.cjs": "6bf6c894f0e22599bce85f0ac5a37871d16b6e2b34328a21249cb4b676dff4e9",
+    "test/upgrade-stress.cjs": "dcd4a8c81b68c516cc0ef0efe429a540a02772b37061db3aee6f5201b9bd8ecf",
+    "package.json": "3adff64fa9d8eb1e8d28018d086aac8716a25705a5573d99c8e2a59c94fd5653",
+    "pnpm-lock.yaml": "58c9d98d9e67759d1b4f710e79dc275c62c47f20bca4100012da7bf5db59bfd8"
+  },
+  "businessSimulation": {
+    "schemaVersion": 1,
+    "modelVersion": "social-sensitivity-v1",
+    "commit": "d421ff545f9fe69651b8694018d70d4feb842627",
+    "scriptSha256": "6bf6c894f0e22599bce85f0ac5a37871d16b6e2b34328a21249cb4b676dff4e9",
+    "seed": 20260922,
+    "runsPerScenario": 500,
+    "cohortSize": 50,
+    "tests": {
+      "deterministicAndBoundaryTests": "passed",
+      "judgmentPaths": 16,
+      "randomizedCohorts": 200
+    },
+    "limitations": [
+      "Synthetic assumptions, not calibrated user data or causal estimates.",
+      "No production RPS measurement.",
+      "Policies use identical traces; longer deadlines mechanically admit more replies and delay closure.",
+      "Feedback eligibility means alive on day30 with >=3 joint replies in last7 days, NOT relationship success.",
+      "Greedy one-pair assignment is an experiment assumption, not current production matchmaking.",
+      "95% intervals measure Monte Carlo error only, not uncertainty in human behavior.",
+      "Strict daily fragility formula is a hypothetical rule, not current implemented DEEP_LINK behavior."
+    ],
+    "results": [
+      {
+        "assumptions": {
+          "id": "engaged",
+          "attendance": 0.85,
+          "compatibility": 0.3,
+          "willing": 0.9,
+          "daily": 0.9,
+          "dropoutHazard": 0.008,
+          "delayMaxHours": 36
+        },
+        "attendees": {
+          "mean": 42.574,
+          "p10": 39,
+          "p90": 46,
+          "monteCarloMean95": [
+            42.35243671383473,
+            42.79556328616527
+          ]
+        },
+        "proposedPairs": {
+          "mean": 19.868,
+          "p10": 18,
+          "p90": 22,
+          "monteCarloMean95": [
+            19.737900226651806,
+            19.99809977334819
+          ]
+        },
+        "noCompatiblePeer": {
+          "mean": 0,
+          "p10": 0,
+          "p90": 0,
+          "monteCarloMean95": [
+            0,
+            0
+          ]
+        },
+        "metrics": {
+          "24h": {
+            "activatedPairsPerCohort": {
+              "mean": 6.398,
+              "p10": 4,
+              "p90": 9,
+              "monteCarloMean95": [
+                6.223140862912898,
+                6.572859137087101
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 4.03,
+              "p10": 2,
+              "p90": 6,
+              "monteCarloMean95": [
+                3.870486258939318,
+                4.189513741060682
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 21.01215763516132,
+              "p10": 19.40158810333482,
+              "p90": 22.483933614609256,
+              "monteCarloMean95": [
+                20.906236722432077,
+                21.118078547890562
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 0,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0,
+                0
+              ]
+            }
+          },
+          "24h_opt_in_24h_grace": {
+            "activatedPairsPerCohort": {
+              "mean": 11.138,
+              "p10": 8,
+              "p90": 14,
+              "monteCarloMean95": [
+                10.943558563872392,
+                11.332441436127608
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 6.974,
+              "p10": 4,
+              "p90": 10,
+              "monteCarloMean95": [
+                6.786361572924332,
+                7.161638427075668
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 24.88417468498931,
+              "p10": 21.950839035368215,
+              "p90": 27.90799056678353,
+              "monteCarloMean95": [
+                24.67773900463542,
+                25.090610365343203
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 4.74,
+              "p10": 3,
+              "p90": 7,
+              "monteCarloMean95": [
+                4.581083423657338,
+                4.898916576342662
+              ]
+            }
+          },
+          "48h": {
+            "activatedPairsPerCohort": {
+              "mean": 15.702,
+              "p10": 13,
+              "p90": 18,
+              "monteCarloMean95": [
+                15.50998413896509,
+                15.89401586103491
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 9.758,
+              "p10": 7,
+              "p90": 13,
+              "monteCarloMean95": [
+                9.551864329859656,
+                9.964135670140342
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 28.784081065847833,
+              "p10": 25.007912620715796,
+              "p90": 32.10352566877478,
+              "monteCarloMean95": [
+                28.542601474684687,
+                29.025560657010978
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 9.304,
+              "p10": 7,
+              "p90": 12,
+              "monteCarloMean95": [
+                9.104697318365725,
+                9.503302681634276
+              ]
+            }
+          },
+          "72h": {
+            "activatedPairsPerCohort": {
+              "mean": 15.702,
+              "p10": 13,
+              "p90": 18,
+              "monteCarloMean95": [
+                15.50998413896509,
+                15.89401586103491
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 9.758,
+              "p10": 7,
+              "p90": 13,
+              "monteCarloMean95": [
+                9.551864329859656,
+                9.964135670140342
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 33.32308050061237,
+              "p10": 27.402029956225306,
+              "p90": 39.289216130873875,
+              "monteCarloMean95": [
+                32.91516328073012,
+                33.73099772049462
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 9.304,
+              "p10": 7,
+              "p90": 12,
+              "monteCarloMean95": [
+                9.104697318365725,
+                9.503302681634276
+              ]
+            }
+          }
+        }
+      },
+      {
+        "assumptions": {
+          "id": "busy",
+          "attendance": 0.7,
+          "compatibility": 0.25,
+          "willing": 0.85,
+          "daily": 0.72,
+          "dropoutHazard": 0.018,
+          "delayMaxHours": 96
+        },
+        "attendees": {
+          "mean": 34.958,
+          "p10": 31,
+          "p90": 39,
+          "monteCarloMean95": [
+            34.66932815706931,
+            35.24667184293069
+          ]
+        },
+        "proposedPairs": {
+          "mean": 15.834,
+          "p10": 13,
+          "p90": 18,
+          "monteCarloMean95": [
+            15.676395771864291,
+            15.991604228135708
+          ]
+        },
+        "noCompatiblePeer": {
+          "mean": 0.002,
+          "p10": 0,
+          "p90": 0,
+          "monteCarloMean95": [
+            -0.0019199999999999998,
+            0.00592
+          ]
+        },
+        "metrics": {
+          "24h": {
+            "activatedPairsPerCohort": {
+              "mean": 0.684,
+              "p10": 0,
+              "p90": 2,
+              "monteCarloMean95": [
+                0.6133614865674546,
+                0.7546385134325455
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.202,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.16264359059667374,
+                0.24135640940332628
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 23.188864528168697,
+              "p10": 21.96154553656067,
+              "p90": 24,
+              "monteCarloMean95": [
+                23.102145230002183,
+                23.27558382633521
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 0,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0,
+                0
+              ]
+            }
+          },
+          "24h_opt_in_24h_grace": {
+            "activatedPairsPerCohort": {
+              "mean": 1.734,
+              "p10": 0,
+              "p90": 3,
+              "monteCarloMean95": [
+                1.6254254598797462,
+                1.8425745401202538
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.492,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.4323656207076223,
+                0.5516343792923777
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 33.80171599958012,
+              "p10": 29.586864256765693,
+              "p90": 37.714285714285715,
+              "monteCarloMean95": [
+                33.508634688436544,
+                34.09479731072369
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 1.05,
+              "p10": 0,
+              "p90": 2,
+              "monteCarloMean95": [
+                0.9658640378896131,
+                1.134135962110387
+              ]
+            }
+          },
+          "48h": {
+            "activatedPairsPerCohort": {
+              "mean": 2.76,
+              "p10": 1,
+              "p90": 5,
+              "monteCarloMean95": [
+                2.6293150046255036,
+                2.890684995374496
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.764,
+              "p10": 0,
+              "p90": 2,
+              "monteCarloMean95": [
+                0.6905741298341026,
+                0.8374258701658974
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 44.25265703888771,
+              "p10": 40.940869303420186,
+              "p90": 47.42537863105535,
+              "monteCarloMean95": [
+                44.03241047133263,
+                44.47290360644279
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 2.076,
+              "p10": 0,
+              "p90": 4,
+              "monteCarloMean95": [
+                1.9609873291079132,
+                2.191012670892087
+              ]
+            }
+          },
+          "72h": {
+            "activatedPairsPerCohort": {
+              "mean": 6.146,
+              "p10": 4,
+              "p90": 9,
+              "monteCarloMean95": [
+                5.961937256632985,
+                6.330062743367015
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 1.696,
+              "p10": 0,
+              "p90": 3,
+              "monteCarloMean95": [
+                1.5888407521601837,
+                1.8031592478398162
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 61.1395032263985,
+              "p10": 55.27464859994749,
+              "p90": 66.76792889038721,
+              "monteCarloMean95": [
+                60.741473165305784,
+                61.53753328749122
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 5.462,
+              "p10": 3,
+              "p90": 8,
+              "monteCarloMean95": [
+                5.284064865517327,
+                5.6399351344826725
+              ]
+            }
+          }
+        }
+      },
+      {
+        "assumptions": {
+          "id": "sparse",
+          "attendance": 0.4,
+          "compatibility": 0.08,
+          "willing": 0.8,
+          "daily": 0.8,
+          "dropoutHazard": 0.02,
+          "delayMaxHours": 72
+        },
+        "attendees": {
+          "mean": 19.894,
+          "p10": 15,
+          "p90": 24,
+          "monteCarloMean95": [
+            19.58024827417891,
+            20.207751725821087
+          ]
+        },
+        "proposedPairs": {
+          "mean": 6.16,
+          "p10": 4,
+          "p90": 9,
+          "monteCarloMean95": [
+            5.992360627541151,
+            6.327639372458849
+          ]
+        },
+        "noCompatiblePeer": {
+          "mean": 4.038,
+          "p10": 1,
+          "p90": 7,
+          "monteCarloMean95": [
+            3.8419498084305226,
+            4.2340501915694775
+          ]
+        },
+        "metrics": {
+          "24h": {
+            "activatedPairsPerCohort": {
+              "mean": 0.37,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.3199718684348918,
+                0.4200281315651082
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.1,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0.07143338832473814,
+                0.12856661167526187
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 23.101925890892012,
+              "p10": 21,
+              "p90": 24,
+              "monteCarloMean95": [
+                22.955010579281765,
+                23.24884120250226
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 0,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0,
+                0
+              ]
+            }
+          },
+          "24h_opt_in_24h_grace": {
+            "activatedPairsPerCohort": {
+              "mean": 0.998,
+              "p10": 0,
+              "p90": 2,
+              "monteCarloMean95": [
+                0.9119417656083205,
+                1.0840582343916794
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.26,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.21387091736735864,
+                0.3061290826326414
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 33.31805161087206,
+              "p10": 27.219629432739957,
+              "p90": 40,
+              "monteCarloMean95": [
+                32.855173805471985,
+                33.78092941627214
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 0.628,
+              "p10": 0,
+              "p90": 2,
+              "monteCarloMean95": [
+                0.557499379249169,
+                0.698500620750831
+              ]
+            }
+          },
+          "48h": {
+            "activatedPairsPerCohort": {
+              "mean": 1.618,
+              "p10": 0,
+              "p90": 3,
+              "monteCarloMean95": [
+                1.5115438110604786,
+                1.7244561889395216
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.432,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.3721439863678189,
+                0.49185601363218107
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 43.22034784937984,
+              "p10": 37.087867009453475,
+              "p90": 48,
+              "monteCarloMean95": [
+                42.84504981619622,
+                43.59564588256346
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 1.248,
+              "p10": 0,
+              "p90": 3,
+              "monteCarloMean95": [
+                1.1530727793431026,
+                1.3429272206568974
+              ]
+            }
+          },
+          "72h": {
+            "activatedPairsPerCohort": {
+              "mean": 3.71,
+              "p10": 1,
+              "p90": 6,
+              "monteCarloMean95": [
+                3.559505803812332,
+                3.860494196187668
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 1.048,
+              "p10": 0,
+              "p90": 2,
+              "monteCarloMean95": [
+                0.9591381952248563,
+                1.1368618047751438
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 56.86775743225115,
+              "p10": 46.804589436203244,
+              "p90": 66.76878816913813,
+              "monteCarloMean95": [
+                56.20294475340625,
+                57.53257011109606
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 3.34,
+              "p10": 1,
+              "p90": 6,
+              "monteCarloMean95": [
+                3.197966890873373,
+                3.482033109126627
+              ]
+            }
+          }
+        }
+      },
+      {
+        "assumptions": {
+          "id": "low_intent",
+          "attendance": 0.65,
+          "compatibility": 0.25,
+          "willing": 0.45,
+          "daily": 0.65,
+          "dropoutHazard": 0.05,
+          "delayMaxHours": 120
+        },
+        "attendees": {
+          "mean": 32.454,
+          "p10": 28,
+          "p90": 37,
+          "monteCarloMean95": [
+            32.151935634490556,
+            32.756064365509445
+          ]
+        },
+        "proposedPairs": {
+          "mean": 14.628,
+          "p10": 12,
+          "p90": 17,
+          "monteCarloMean95": [
+            14.466269121670566,
+            14.789730878329435
+          ]
+        },
+        "noCompatiblePeer": {
+          "mean": 0,
+          "p10": 0,
+          "p90": 0,
+          "monteCarloMean95": [
+            0,
+            0
+          ]
+        },
+        "metrics": {
+          "24h": {
+            "activatedPairsPerCohort": {
+              "mean": 0.1,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0.07253251877127975,
+                0.12746748122872026
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.004,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                -0.0015381595519129753,
+                0.009538159551912975
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 23.42871510276087,
+              "p10": 22.153846153846153,
+              "p90": 24,
+              "monteCarloMean95": [
+                23.349280989058162,
+                23.508149216463575
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 0,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0,
+                0
+              ]
+            }
+          },
+          "24h_opt_in_24h_grace": {
+            "activatedPairsPerCohort": {
+              "mean": 0.274,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.22969924164100186,
+                0.3183007583589982
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.008,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0.000183602662692392,
+                0.01581639733730761
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 34.91250757858205,
+              "p10": 30.666666666666668,
+              "p90": 39.42857142857143,
+              "monteCarloMean95": [
+                34.60901871031565,
+                35.21599644684845
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 0.174,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.13982307853651169,
+                0.2081769214634883
+              ]
+            }
+          },
+          "48h": {
+            "activatedPairsPerCohort": {
+              "mean": 0.434,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.3792303715074639,
+                0.4887696284925361
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.012,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0.002446227533760642,
+                0.02155377246623936
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 46.49651058108733,
+              "p10": 43.90393157502903,
+              "p90": 48,
+              "monteCarloMean95": [
+                46.324993654007635,
+                46.66802750816702
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 0.334,
+              "p10": 0,
+              "p90": 1,
+              "monteCarloMean95": [
+                0.2863890164740887,
+                0.38161098352591133
+              ]
+            }
+          },
+          "72h": {
+            "activatedPairsPerCohort": {
+              "mean": 0.988,
+              "p10": 0,
+              "p90": 2,
+              "monteCarloMean95": [
+                0.9066385534225313,
+                1.0693614465774688
+              ]
+            },
+            "feedbackEligiblePairsDay30": {
+              "mean": 0.026,
+              "p10": 0,
+              "p90": 0,
+              "monteCarloMean95": [
+                0.012037218208727064,
+                0.03996278179127293
+              ]
+            },
+            "meanUnresolvedHoursPerProposedPair": {
+              "mean": 68.85687766996728,
+              "p10": 64.41535158189279,
+              "p90": 72,
+              "monteCarloMean95": [
+                68.57565259542204,
+                69.13810274451251
+              ]
+            },
+            "pairedActivationDifferenceVs24h": {
+              "mean": 0.888,
+              "p10": 0,
+              "p90": 2,
+              "monteCarloMean95": [
+                0.8103371893147883,
+                0.9656628106852118
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "density": [
+      {
+        "size": 20,
+        "attendance": 0.4,
+        "compatibility": 0.08,
+        "noPeerShareAmongAttendees": {
+          "mean": 0.5585630203130202,
+          "p10": 0.25,
+          "p90": 1,
+          "monteCarloMean95": [
+            0.5365609755229357,
+            0.5805650651031047
+          ]
+        }
+      },
+      {
+        "size": 50,
+        "attendance": 0.4,
+        "compatibility": 0.08,
+        "noPeerShareAmongAttendees": {
+          "mean": 0.2140184776458703,
+          "p10": 0.05555555555555555,
+          "p90": 0.3888888888888889,
+          "monteCarloMean95": [
+            0.20239356340093653,
+            0.22564339189080404
+          ]
+        }
+      },
+      {
+        "size": 100,
+        "attendance": 0.4,
+        "compatibility": 0.08,
+        "noPeerShareAmongAttendees": {
+          "mean": 0.0412793807989387,
+          "p10": 0,
+          "p90": 0.10256410256410256,
+          "monteCarloMean95": [
+            0.03773474807635004,
+            0.04482401352152735
+          ]
+        }
+      }
+    ],
+    "dailyFragility": [
+      {
+        "assumedIndividualDailyReply": 0.7,
+        "probabilityBothReplyAll28DaysUnderIndependence": 2.1158761380242465e-09
+      },
+      {
+        "assumedIndividualDailyReply": 0.8,
+        "probabilityBothReplyAll28DaysUnderIndependence": 3.741444191567123e-06
+      },
+      {
+        "assumedIndividualDailyReply": 0.9,
+        "probabilityBothReplyAll28DaysUnderIndependence": 0.002738927449953412
+      },
+      {
+        "assumedIndividualDailyReply": 0.95,
+        "probabilityBothReplyAll28DaysUnderIndependence": 0.056561627350252934
+      }
+    ]
+  },
+  "databaseStress": [
+    {
+      "schemaVersion": 1,
+      "runId": "0cd7c2e4-b5d4-42a2-925d-e88afefd1d23",
+      "executedAt": "2026-09-22T01:47:08.288Z",
+      "commit": "d421ff545f9fe69651b8694018d70d4feb842627",
+      "scriptSha256": "dcd4a8c81b68c516cc0ef0efe429a540a02772b37061db3aee6f5201b9bd8ecf",
+      "node": "v22.23.2",
+      "database": "PostgreSQL 16.14 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+      "concurrency": 1,
+      "poolSize": 10,
+      "repeats": 3,
+      "samples": 30,
+      "fixture": {
+        "fixtureRepair": "Pre-provisioned disposable schema; migration not re-tested in this run."
+      },
+      "limits": [
+        "Closed-loop service calls; excludes HTTP, authentication, Redis locks, WS, COS and client rendering.",
+        "Actual production services imported; events and media deletion are stubs.",
+        "Reference SQL patterns are isolated proof-of-concept, NOT upgraded production service.",
+        "Latency includes caller pool queue; no production capacity certification.",
+        "Fault injection models relay crash point, not OS kill/network partition."
+      ],
+      "releaseGatePassed": false,
+      "referenceGatePassed": true,
+      "violations": 15,
+      "records": [
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 314.3941500000001,
+            "p50Ms": 3.772237000000132,
+            "p95Ms": 4.823466000000053,
+            "p99Ms": 7.299498999999969,
+            "closedLoopAttemptsPerSecond": 254.4576608693259
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 418.09359600000016,
+            "p50Ms": 3.925539999999728,
+            "p95Ms": 4.862280999999939,
+            "p99Ms": 8.2792629999999,
+            "closedLoopAttemptsPerSecond": 239.18089383985676
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "current-service:echo:1",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 288.7318009999999,
+            "p50Ms": 4.433943999999883,
+            "p95Ms": 7.779539999999997,
+            "p99Ms": 12.619327999999769,
+            "closedLoopAttemptsPerSecond": 207.8053051038878
+          }
+        },
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 138.37332300000025,
+            "p50Ms": 1.4992369999999937,
+            "p95Ms": 2.4240520000003016,
+            "p99Ms": 9.918481000000156,
+            "closedLoopAttemptsPerSecond": 578.1461214167695
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 130.73415299999988,
+            "p50Ms": 1.1628959999998187,
+            "p95Ms": 1.7481450000000223,
+            "p99Ms": 3.937843000000157,
+            "closedLoopAttemptsPerSecond": 764.9110634464438
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:1",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 362.3099189999998,
+            "p50Ms": 5.033621999999923,
+            "p95Ms": 7.226318999999876,
+            "p99Ms": 57.85033999999996,
+            "closedLoopAttemptsPerSecond": 165.6040777619451
+          }
+        },
+        {
+          "id": "duplicate-freeze-1",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 1,
+            "remaining": 1
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:freeze:1",
+            "attempts": 10,
+            "successful": 1,
+            "errors": {
+              "400": 9
+            },
+            "durationMs": 66.31599899999992,
+            "p50Ms": 5.433856000000105,
+            "p95Ms": 16.31123400000024,
+            "p99Ms": 16.31123400000024,
+            "closedLoopAttemptsPerSecond": 150.79317435902627
+          }
+        },
+        {
+          "id": "redeem-balance-1",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": 0,
+            "freezes": 4
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:redeem:1",
+            "attempts": 10,
+            "successful": 1,
+            "errors": {
+              "400": 9
+            },
+            "durationMs": 21.04233400000021,
+            "p50Ms": 1.6687400000000707,
+            "p95Ms": 5.453498000000309,
+            "p99Ms": 5.453498000000309,
+            "closedLoopAttemptsPerSecond": 475.2324528258082
+          }
+        },
+        {
+          "id": "first-round-extension-1",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 30
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:1",
+            "attempts": 30,
+            "successful": 30,
+            "errors": {},
+            "durationMs": 176.15719100000024,
+            "p50Ms": 5.604196000000229,
+            "p95Ms": 6.959738000000016,
+            "p99Ms": 9.149419999999736,
+            "closedLoopAttemptsPerSecond": 170.30244311740847
+          }
+        },
+        {
+          "id": "serializable-retry-1",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "DEEP_LINK",
+            "errors": {}
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:concurrent-votes:1",
+            "attempts": 2,
+            "successful": 2,
+            "errors": {},
+            "durationMs": 13.522312999999485,
+            "p50Ms": 6.5249149999999645,
+            "p95Ms": 6.924136999999973,
+            "p99Ms": 6.924136999999973,
+            "closedLoopAttemptsPerSecond": 147.903690736938
+          }
+        },
+        {
+          "id": "matching-replay-1",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-1",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-2",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:2",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 306.2654540000003,
+            "p50Ms": 3.633523999999852,
+            "p95Ms": 4.850378000000092,
+            "p99Ms": 11.80384999999933,
+            "closedLoopAttemptsPerSecond": 261.21130854020487
+          }
+        },
+        {
+          "id": "daily-reward-2",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:2",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 399.006668,
+            "p50Ms": 3.862361000000419,
+            "p95Ms": 4.568631000000096,
+            "p99Ms": 5.249721000000136,
+            "closedLoopAttemptsPerSecond": 250.6223780701329
+          }
+        },
+        {
+          "id": "simultaneous-echo-2",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "current-service:echo:2",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 283.93602999999985,
+            "p50Ms": 4.574402000000191,
+            "p95Ms": 5.0010739999997895,
+            "p99Ms": 18.304242999999587,
+            "closedLoopAttemptsPerSecond": 211.31520363935508
+          }
+        },
+        {
+          "id": "boarding-duplicate-2",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:2",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 122.79130799999984,
+            "p50Ms": 1.4343760000001566,
+            "p95Ms": 1.9574060000004465,
+            "p99Ms": 4.567840000000615,
+            "closedLoopAttemptsPerSecond": 651.5119132048019
+          }
+        },
+        {
+          "id": "daily-reward-2",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:2",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 125.56639600000017,
+            "p50Ms": 1.0532319999992978,
+            "p95Ms": 1.8557529999998224,
+            "p99Ms": 4.605388999999377,
+            "closedLoopAttemptsPerSecond": 796.391416697186
+          }
+        },
+        {
+          "id": "simultaneous-echo-2",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:2",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 311.9846319999997,
+            "p50Ms": 4.9008420000000115,
+            "p95Ms": 7.522232999999687,
+            "p99Ms": 19.403111999999965,
+            "closedLoopAttemptsPerSecond": 192.317165160879
+          }
+        },
+        {
+          "id": "duplicate-freeze-2",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 1,
+            "remaining": 1
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:freeze:2",
+            "attempts": 10,
+            "successful": 1,
+            "errors": {
+              "400": 9
+            },
+            "durationMs": 59.64438900000005,
+            "p50Ms": 4.714758000000074,
+            "p95Ms": 12.639898999999787,
+            "p99Ms": 12.639898999999787,
+            "closedLoopAttemptsPerSecond": 167.66036449799145
+          }
+        },
+        {
+          "id": "redeem-balance-2",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": 0,
+            "freezes": 4
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:redeem:2",
+            "attempts": 10,
+            "successful": 1,
+            "errors": {
+              "400": 9
+            },
+            "durationMs": 19.45461499999965,
+            "p50Ms": 1.5882560000000012,
+            "p95Ms": 4.876067000000148,
+            "p99Ms": 4.876067000000148,
+            "closedLoopAttemptsPerSecond": 514.0168540986383
+          }
+        },
+        {
+          "id": "first-round-extension-2",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 30
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:2",
+            "attempts": 30,
+            "successful": 30,
+            "errors": {},
+            "durationMs": 187.8171459999994,
+            "p50Ms": 5.858501000000615,
+            "p95Ms": 8.614086999999927,
+            "p99Ms": 12.464521999999306,
+            "closedLoopAttemptsPerSecond": 159.72982573167252
+          }
+        },
+        {
+          "id": "serializable-retry-2",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "DEEP_LINK",
+            "errors": {}
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:concurrent-votes:2",
+            "attempts": 2,
+            "successful": 2,
+            "errors": {},
+            "durationMs": 14.277908999999454,
+            "p50Ms": 7.020800000000236,
+            "p95Ms": 7.23442199999954,
+            "p99Ms": 7.23442199999954,
+            "closedLoopAttemptsPerSecond": 140.07653361567696
+          }
+        },
+        {
+          "id": "matching-replay-2",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-2",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-3",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:3",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 300.4204639999998,
+            "p50Ms": 3.6290100000005623,
+            "p95Ms": 4.192898000000241,
+            "p99Ms": 8.950925999999527,
+            "closedLoopAttemptsPerSecond": 266.2934439779044
+          }
+        },
+        {
+          "id": "daily-reward-3",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:3",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 422.3434449999995,
+            "p50Ms": 3.9934459999994942,
+            "p95Ms": 5.174106000000393,
+            "p99Ms": 7.541928999999982,
+            "closedLoopAttemptsPerSecond": 236.77412585390098
+          }
+        },
+        {
+          "id": "simultaneous-echo-3",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "current-service:echo:3",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 179.50434099999984,
+            "p50Ms": 2.8875809999999547,
+            "p95Ms": 3.2037019999997938,
+            "p99Ms": 10.094256000000314,
+            "closedLoopAttemptsPerSecond": 334.2537548994431
+          }
+        },
+        {
+          "id": "boarding-duplicate-3",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:3",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 106.11269400000037,
+            "p50Ms": 0.835030999999617,
+            "p95Ms": 1.433367000000544,
+            "p99Ms": 17.020798999999897,
+            "closedLoopAttemptsPerSecond": 753.915455204631
+          }
+        },
+        {
+          "id": "daily-reward-3",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:3",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 69.05870399999912,
+            "p50Ms": 0.609454999999798,
+            "p95Ms": 0.8084079999998721,
+            "p99Ms": 2.819492000000537,
+            "closedLoopAttemptsPerSecond": 1448.043392184152
+          }
+        },
+        {
+          "id": "simultaneous-echo-3",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:3",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 143.10713299999952,
+            "p50Ms": 2.16595899999993,
+            "p95Ms": 4.412925000000541,
+            "p99Ms": 5.261591999998927,
+            "closedLoopAttemptsPerSecond": 419.2663128818338
+          }
+        },
+        {
+          "id": "duplicate-freeze-3",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 1,
+            "remaining": 1
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:freeze:3",
+            "attempts": 10,
+            "successful": 1,
+            "errors": {
+              "400": 9
+            },
+            "durationMs": 28.72204799999963,
+            "p50Ms": 2.458733999999822,
+            "p95Ms": 6.29135099999985,
+            "p99Ms": 6.29135099999985,
+            "closedLoopAttemptsPerSecond": 348.16458770628503
+          }
+        },
+        {
+          "id": "redeem-balance-3",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": 0,
+            "freezes": 4
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:redeem:3",
+            "attempts": 10,
+            "successful": 1,
+            "errors": {
+              "400": 9
+            },
+            "durationMs": 14.82588399999986,
+            "p50Ms": 0.877425000000585,
+            "p95Ms": 3.097176999999647,
+            "p99Ms": 3.097176999999647,
+            "closedLoopAttemptsPerSecond": 674.4960367961934
+          }
+        },
+        {
+          "id": "first-round-extension-3",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 30
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:3",
+            "attempts": 30,
+            "successful": 30,
+            "errors": {},
+            "durationMs": 165.57332599999972,
+            "p50Ms": 4.884067999999388,
+            "p95Ms": 14.223371000000043,
+            "p99Ms": 17.90092800000093,
+            "closedLoopAttemptsPerSecond": 181.18860522255892
+          }
+        },
+        {
+          "id": "serializable-retry-3",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "DEEP_LINK",
+            "errors": {}
+          },
+          "invariantPassed": true,
+          "load": {
+            "label": "current:concurrent-votes:3",
+            "attempts": 2,
+            "successful": 2,
+            "errors": {},
+            "durationMs": 9.7649820000006,
+            "p50Ms": 4.829829999998765,
+            "p95Ms": 4.91323199999897,
+            "p99Ms": 4.91323199999897,
+            "closedLoopAttemptsPerSecond": 204.81348557528085
+          }
+        },
+        {
+          "id": "matching-replay-3",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-3",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "outbox-replay-after-crash",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference:outbox-replay-after-crash",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 123.67854100000113,
+            "p50Ms": 1.2187420000009297,
+            "p95Ms": 1.5850399999999354,
+            "p99Ms": 2.0289370000009512,
+            "closedLoopAttemptsPerSecond": 808.5477010922945
+          }
+        },
+        {
+          "id": "outbox-transaction-rollback",
+          "layer": "reference-pattern",
+          "expected": 91,
+          "actual": 91,
+          "invariantPassed": true
+        }
+      ],
+      "cleanup": "run fixtures removed"
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "bdbddced-1b71-4550-b19b-9b09f369e3ed",
+      "executedAt": "2026-09-22T01:47:12.293Z",
+      "commit": "d421ff545f9fe69651b8694018d70d4feb842627",
+      "scriptSha256": "dcd4a8c81b68c516cc0ef0efe429a540a02772b37061db3aee6f5201b9bd8ecf",
+      "node": "v22.23.2",
+      "database": "PostgreSQL 16.14 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+      "concurrency": 10,
+      "poolSize": 10,
+      "repeats": 3,
+      "samples": 30,
+      "fixture": {
+        "fixtureRepair": "Pre-provisioned disposable schema; migration not re-tested in this run."
+      },
+      "limits": [
+        "Closed-loop service calls; excludes HTTP, authentication, Redis locks, WS, COS and client rendering.",
+        "Actual production services imported; events and media deletion are stubs.",
+        "Reference SQL patterns are isolated proof-of-concept, NOT upgraded production service.",
+        "Latency includes caller pool queue; no production capacity certification.",
+        "Fault injection models relay crash point, not OS kill/network partition."
+      ],
+      "releaseGatePassed": false,
+      "referenceGatePassed": true,
+      "violations": 27,
+      "records": [
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 133.715099,
+            "p50Ms": 10.98181999999997,
+            "p95Ms": 52.29547700000012,
+            "p99Ms": 55.58188099999984,
+            "closedLoopAttemptsPerSecond": 598.286959350791
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 98.49464899999998,
+            "p50Ms": 9.204905999999937,
+            "p95Ms": 14.106670000000122,
+            "p99Ms": 14.521371000000045,
+            "closedLoopAttemptsPerSecond": 1015.2835815476637
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 1,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:1",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 76.39744299999984,
+            "p50Ms": 12.015374000000065,
+            "p95Ms": 17.681798999999955,
+            "p99Ms": 28.063899999999876,
+            "closedLoopAttemptsPerSecond": 785.366599246
+          }
+        },
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 41.60373699999991,
+            "p50Ms": 4.844630999999936,
+            "p95Ms": 9.687898000000132,
+            "p99Ms": 9.93350200000009,
+            "closedLoopAttemptsPerSecond": 1922.9041852658613
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 42.27316700000006,
+            "p50Ms": 3.621015999999827,
+            "p95Ms": 8.119686000000002,
+            "p99Ms": 8.50298799999996,
+            "closedLoopAttemptsPerSecond": 2365.5667908675937
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:1",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 68.22306200000003,
+            "p50Ms": 10.202162999999928,
+            "p95Ms": 16.347698000000037,
+            "p99Ms": 16.853229000000056,
+            "closedLoopAttemptsPerSecond": 879.4680015974653
+          }
+        },
+        {
+          "id": "duplicate-freeze-1",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 24.188450999999986,
+            "p50Ms": 21.729543999999805,
+            "p95Ms": 23.702199000000064,
+            "p99Ms": 23.702199000000064,
+            "closedLoopAttemptsPerSecond": 413.420437712196
+          }
+        },
+        {
+          "id": "redeem-balance-1",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 9.507794000000104,
+            "p50Ms": 8.10992699999997,
+            "p95Ms": 9.125112999999828,
+            "p99Ms": 9.125112999999828,
+            "closedLoopAttemptsPerSecond": 1051.7686857750484
+          }
+        },
+        {
+          "id": "first-round-extension-1",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 10
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:1",
+            "attempts": 30,
+            "successful": 10,
+            "errors": {
+              "P2034": 20
+            },
+            "durationMs": 75.15568899999971,
+            "p50Ms": 21.800856000000294,
+            "p95Ms": 37.06791499999963,
+            "p99Ms": 37.195154,
+            "closedLoopAttemptsPerSecond": 399.17137876282544
+          }
+        },
+        {
+          "id": "serializable-retry-1",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:1",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 5.1890769999999975,
+            "p50Ms": 5.048975000000155,
+            "p95Ms": 5.120024999999714,
+            "p99Ms": 5.120024999999714,
+            "closedLoopAttemptsPerSecond": 385.4249994748586
+          }
+        },
+        {
+          "id": "matching-replay-1",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-1",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-2",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:2",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 70.73049400000036,
+            "p50Ms": 8.625957000000199,
+            "p95Ms": 11.089414000000033,
+            "p99Ms": 15.220017000000098,
+            "closedLoopAttemptsPerSecond": 1131.0538846229406
+          }
+        },
+        {
+          "id": "daily-reward-2",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:2",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 83.50643600000012,
+            "p50Ms": 7.8039199999998345,
+            "p95Ms": 14.209327999999914,
+            "p99Ms": 15.23467299999993,
+            "closedLoopAttemptsPerSecond": 1197.512488737992
+          }
+        },
+        {
+          "id": "simultaneous-echo-2",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 1,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:2",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 49.10995099999991,
+            "p50Ms": 7.7802230000002055,
+            "p95Ms": 11.48068400000011,
+            "p99Ms": 15.94699700000001,
+            "closedLoopAttemptsPerSecond": 1221.748317362404
+          }
+        },
+        {
+          "id": "boarding-duplicate-2",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:2",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 30.695173000000068,
+            "p50Ms": 3.667555999999877,
+            "p95Ms": 5.552992999999788,
+            "p99Ms": 5.593204999999671,
+            "closedLoopAttemptsPerSecond": 2606.2729797939182
+          }
+        },
+        {
+          "id": "daily-reward-2",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:2",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 64.17050199999994,
+            "p50Ms": 2.988861999999699,
+            "p95Ms": 18.80033500000036,
+            "p99Ms": 19.182412999999997,
+            "closedLoopAttemptsPerSecond": 1558.348413730659
+          }
+        },
+        {
+          "id": "simultaneous-echo-2",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:2",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 66.74352799999997,
+            "p50Ms": 10.122449999999844,
+            "p95Ms": 18.791697000000113,
+            "p99Ms": 22.61322599999994,
+            "closedLoopAttemptsPerSecond": 898.9635669244219
+          }
+        },
+        {
+          "id": "duplicate-freeze-2",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:2",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 21.87979899999982,
+            "p50Ms": 19.596743999999944,
+            "p95Ms": 21.6854400000002,
+            "p99Ms": 21.6854400000002,
+            "closedLoopAttemptsPerSecond": 457.0425898336672
+          }
+        },
+        {
+          "id": "redeem-balance-2",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:2",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 7.353962000000138,
+            "p50Ms": 6.8526090000000295,
+            "p95Ms": 7.1191210000001774,
+            "p99Ms": 7.1191210000001774,
+            "closedLoopAttemptsPerSecond": 1359.8112146894168
+          }
+        },
+        {
+          "id": "first-round-extension-2",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 17
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:2",
+            "attempts": 30,
+            "successful": 17,
+            "errors": {
+              "P2034": 13
+            },
+            "durationMs": 44.8860380000001,
+            "p50Ms": 14.474740999999995,
+            "p95Ms": 20.389259999999922,
+            "p99Ms": 20.39737500000001,
+            "closedLoopAttemptsPerSecond": 668.3592791148093
+          }
+        },
+        {
+          "id": "serializable-retry-2",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:2",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 4.136676999999963,
+            "p50Ms": 3.172715000000153,
+            "p95Ms": 4.105942000000141,
+            "p99Ms": 4.105942000000141,
+            "closedLoopAttemptsPerSecond": 483.4798559326768
+          }
+        },
+        {
+          "id": "matching-replay-2",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-2",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-3",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:3",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 62.48540099999991,
+            "p50Ms": 7.179529000000002,
+            "p95Ms": 12.751896000000215,
+            "p99Ms": 17.66265099999964,
+            "closedLoopAttemptsPerSecond": 1280.2990573750196
+          }
+        },
+        {
+          "id": "daily-reward-3",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:3",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 86.907557,
+            "p50Ms": 7.134857999999895,
+            "p95Ms": 13.538294999999835,
+            "p99Ms": 16.11197600000014,
+            "closedLoopAttemptsPerSecond": 1150.647923517169
+          }
+        },
+        {
+          "id": "simultaneous-echo-3",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 0,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:3",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 73.5670739999996,
+            "p50Ms": 11.180943999999727,
+            "p95Ms": 17.269566999999824,
+            "p99Ms": 17.648229000000356,
+            "closedLoopAttemptsPerSecond": 815.5822535500098
+          }
+        },
+        {
+          "id": "boarding-duplicate-3",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:3",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 44.120560000000296,
+            "p50Ms": 5.366346999999678,
+            "p95Ms": 8.379561000000194,
+            "p99Ms": 8.457636999999977,
+            "closedLoopAttemptsPerSecond": 1813.213612882508
+          }
+        },
+        {
+          "id": "daily-reward-3",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:3",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 54.67667299999994,
+            "p50Ms": 4.753005999999914,
+            "p95Ms": 8.040770000000066,
+            "p99Ms": 9.458274999999958,
+            "closedLoopAttemptsPerSecond": 1828.9335197845728
+          }
+        },
+        {
+          "id": "simultaneous-echo-3",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:3",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 52.45575299999973,
+            "p50Ms": 8.08488299999999,
+            "p95Ms": 12.2114789999996,
+            "p99Ms": 13.690820000000258,
+            "closedLoopAttemptsPerSecond": 1143.8211553268582
+          }
+        },
+        {
+          "id": "duplicate-freeze-3",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:3",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 15.375362000000223,
+            "p50Ms": 13.58938100000023,
+            "p95Ms": 15.071951999999783,
+            "p99Ms": 15.071951999999783,
+            "closedLoopAttemptsPerSecond": 650.3911907895148
+          }
+        },
+        {
+          "id": "redeem-balance-3",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:3",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 7.450436999999965,
+            "p50Ms": 6.838838000000123,
+            "p95Ms": 7.289753999999903,
+            "p99Ms": 7.289753999999903,
+            "closedLoopAttemptsPerSecond": 1342.2031486206845
+          }
+        },
+        {
+          "id": "first-round-extension-3",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 18
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:3",
+            "attempts": 30,
+            "successful": 18,
+            "errors": {
+              "P2034": 12
+            },
+            "durationMs": 38.48255899999958,
+            "p50Ms": 11.001740000000154,
+            "p95Ms": 18.501106000000163,
+            "p99Ms": 19.321887999999944,
+            "closedLoopAttemptsPerSecond": 779.5739363382858
+          }
+        },
+        {
+          "id": "serializable-retry-3",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:3",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 3.7084070000000793,
+            "p50Ms": 2.959939999999733,
+            "p95Ms": 3.6794560000003003,
+            "p99Ms": 3.6794560000003003,
+            "closedLoopAttemptsPerSecond": 539.315129110682
+          }
+        },
+        {
+          "id": "matching-replay-3",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-3",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "outbox-replay-after-crash",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference:outbox-replay-after-crash",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 35.55957199999966,
+            "p50Ms": 3.326951000000008,
+            "p95Ms": 4.8018660000002455,
+            "p99Ms": 5.46349199999986,
+            "closedLoopAttemptsPerSecond": 2812.1823288537034
+          }
+        },
+        {
+          "id": "outbox-transaction-rollback",
+          "layer": "reference-pattern",
+          "expected": 91,
+          "actual": 91,
+          "invariantPassed": true
+        }
+      ],
+      "cleanup": "run fixtures removed"
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "269e6ee3-4110-474d-951c-10a19a96d0bd",
+      "executedAt": "2026-09-22T01:46:09.627Z",
+      "commit": "d421ff545f9fe69651b8694018d70d4feb842627",
+      "scriptSha256": "dcd4a8c81b68c516cc0ef0efe429a540a02772b37061db3aee6f5201b9bd8ecf",
+      "node": "v22.23.2",
+      "database": "PostgreSQL 16.14 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+      "concurrency": 50,
+      "poolSize": 10,
+      "repeats": 3,
+      "samples": 30,
+      "fixture": {
+        "originalPassed": false,
+        "fixtureRepair": "Created reveal_level before original migration 000002, only in isolated test DB; production SQL unchanged."
+      },
+      "limits": [
+        "Closed-loop service calls; excludes HTTP, authentication, Redis locks, WS, COS and client rendering.",
+        "Actual production services imported; events and media deletion are stubs.",
+        "Reference SQL patterns are isolated proof-of-concept, NOT upgraded production service.",
+        "Latency includes caller pool queue; no production capacity certification.",
+        "Fault injection models relay crash point, not OS kill/network partition."
+      ],
+      "releaseGatePassed": false,
+      "referenceGatePassed": true,
+      "violations": 28,
+      "records": [
+        {
+          "id": "original-migration-000002",
+          "layer": "production-migration",
+          "expected": "success on empty database",
+          "actual": {
+            "exitCode": 1,
+            "stderr": "Error: ERROR: type \"reveal_level\" does not exist\n\n\n"
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 90.45479599999999,
+            "p50Ms": 47.11595899999975,
+            "p95Ms": 63.14945700000044,
+            "p99Ms": 63.27395700000034,
+            "closedLoopAttemptsPerSecond": 884.419660843633
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 72.98236500000075,
+            "p50Ms": 28.724889999999505,
+            "p95Ms": 46.65574599999945,
+            "p99Ms": 50.37530700000025,
+            "closedLoopAttemptsPerSecond": 1370.1940187879493
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 0,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:1",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 63.98794199999975,
+            "p50Ms": 48.047679000000244,
+            "p95Ms": 49.748891000000185,
+            "p99Ms": 54.47829499999989,
+            "closedLoopAttemptsPerSecond": 937.6766641440075
+          }
+        },
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 33.51330699999926,
+            "p50Ms": 17.11783699999978,
+            "p95Ms": 22.731988999999885,
+            "p99Ms": 28.540596999999252,
+            "closedLoopAttemptsPerSecond": 2387.111483805575
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 52.764460999999756,
+            "p50Ms": 23.6108090000007,
+            "p95Ms": 28.750224999999773,
+            "p99Ms": 32.14768800000002,
+            "closedLoopAttemptsPerSecond": 1895.2150387739289
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:1",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 78.98362700000052,
+            "p50Ms": 49.83405199999925,
+            "p95Ms": 70.34254099999998,
+            "p99Ms": 76.23692300000039,
+            "closedLoopAttemptsPerSecond": 759.6511109827813
+          }
+        },
+        {
+          "id": "duplicate-freeze-1",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 24.05756199999996,
+            "p50Ms": 21.63328900000033,
+            "p95Ms": 23.68203700000049,
+            "p99Ms": 23.68203700000049,
+            "closedLoopAttemptsPerSecond": 415.6697174884145
+          }
+        },
+        {
+          "id": "redeem-balance-1",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 8.827650999999605,
+            "p50Ms": 8.281654999999773,
+            "p95Ms": 8.625899000000572,
+            "p99Ms": 8.625899000000572,
+            "closedLoopAttemptsPerSecond": 1132.8041853943305
+          }
+        },
+        {
+          "id": "first-round-extension-1",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 4
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:1",
+            "attempts": 30,
+            "successful": 4,
+            "errors": {
+              "P2034": 26
+            },
+            "durationMs": 55.3889650000001,
+            "p50Ms": 43.23221100000046,
+            "p95Ms": 54.83772500000032,
+            "p99Ms": 54.85236799999984,
+            "closedLoopAttemptsPerSecond": 541.6241303660386
+          }
+        },
+        {
+          "id": "serializable-retry-1",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:1",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 4.5940029999992475,
+            "p50Ms": 4.421779999999671,
+            "p95Ms": 4.573409999999967,
+            "p99Ms": 4.573409999999967,
+            "closedLoopAttemptsPerSecond": 435.35017282320615
+          }
+        },
+        {
+          "id": "matching-replay-1",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-1",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-2",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:2",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 58.079241999999795,
+            "p50Ms": 30.917653000000428,
+            "p95Ms": 38.6350309999998,
+            "p99Ms": 39.864614000000074,
+            "closedLoopAttemptsPerSecond": 1377.4284450888715
+          }
+        },
+        {
+          "id": "daily-reward-2",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:2",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 74.57384700000057,
+            "p50Ms": 34.71720499999992,
+            "p95Ms": 39.42152000000078,
+            "p99Ms": 41.97351299999991,
+            "closedLoopAttemptsPerSecond": 1340.9526800997571
+          }
+        },
+        {
+          "id": "simultaneous-echo-2",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 0,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:2",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 57.884148000000096,
+            "p50Ms": 36.99529600000005,
+            "p95Ms": 51.01045499999964,
+            "p99Ms": 57.291401000000405,
+            "closedLoopAttemptsPerSecond": 1036.553220062942
+          }
+        },
+        {
+          "id": "boarding-duplicate-2",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:2",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 42.530141999999614,
+            "p50Ms": 23.26468399999976,
+            "p95Ms": 33.007338999999774,
+            "p99Ms": 33.24991499999942,
+            "closedLoopAttemptsPerSecond": 1881.0188783287092
+          }
+        },
+        {
+          "id": "daily-reward-2",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:2",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 44.71320000000014,
+            "p50Ms": 19.145810999999412,
+            "p95Ms": 28.845634999999675,
+            "p99Ms": 28.880780999999843,
+            "closedLoopAttemptsPerSecond": 2236.476029449909
+          }
+        },
+        {
+          "id": "simultaneous-echo-2",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:2",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 69.65326200000072,
+            "p50Ms": 39.827785000000404,
+            "p95Ms": 62.68973899999946,
+            "p99Ms": 67.51062899999943,
+            "closedLoopAttemptsPerSecond": 861.4097642691792
+          }
+        },
+        {
+          "id": "duplicate-freeze-2",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:2",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 21.180660999999418,
+            "p50Ms": 19.042645999999877,
+            "p95Ms": 20.931625999999596,
+            "p99Ms": 20.931625999999596,
+            "closedLoopAttemptsPerSecond": 472.12879711356857
+          }
+        },
+        {
+          "id": "redeem-balance-2",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:2",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 6.737624000000324,
+            "p50Ms": 6.010556999999608,
+            "p95Ms": 6.611015000000407,
+            "p99Ms": 6.611015000000407,
+            "closedLoopAttemptsPerSecond": 1484.20273971945
+          }
+        },
+        {
+          "id": "first-round-extension-2",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 7
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:2",
+            "attempts": 30,
+            "successful": 7,
+            "errors": {
+              "P2034": 23
+            },
+            "durationMs": 43.95286800000031,
+            "p50Ms": 36.860036000000036,
+            "p95Ms": 42.72169799999938,
+            "p99Ms": 43.94179600000007,
+            "closedLoopAttemptsPerSecond": 682.5493162357412
+          }
+        },
+        {
+          "id": "serializable-retry-2",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:2",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 4.240012000000206,
+            "p50Ms": 3.217051000000538,
+            "p95Ms": 4.208859000000302,
+            "p99Ms": 4.208859000000302,
+            "closedLoopAttemptsPerSecond": 471.6967782166425
+          }
+        },
+        {
+          "id": "matching-replay-2",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-2",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-3",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:3",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 46.69352499999968,
+            "p50Ms": 26.563000000000102,
+            "p95Ms": 32.17248399999971,
+            "p99Ms": 41.90775500000018,
+            "closedLoopAttemptsPerSecond": 1713.299649148368
+          }
+        },
+        {
+          "id": "daily-reward-3",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:3",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 94.7047419999999,
+            "p50Ms": 35.99454400000013,
+            "p95Ms": 55.189118000000235,
+            "p99Ms": 57.22323499999948,
+            "closedLoopAttemptsPerSecond": 1055.9133353639263
+          }
+        },
+        {
+          "id": "simultaneous-echo-3",
+          "layer": "current-service",
+          "expected": 30,
+          "actual": 0,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:3",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 67.61605400000008,
+            "p50Ms": 48.24569199999951,
+            "p95Ms": 58.59106499999962,
+            "p99Ms": 60.32705100000021,
+            "closedLoopAttemptsPerSecond": 887.3632288568618
+          }
+        },
+        {
+          "id": "boarding-duplicate-3",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:3",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 34.60754999999972,
+            "p50Ms": 17.91672600000038,
+            "p95Ms": 24.93616899999961,
+            "p99Ms": 24.943123000000014,
+            "closedLoopAttemptsPerSecond": 2311.6343110101884
+          }
+        },
+        {
+          "id": "daily-reward-3",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:3",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 52.83079700000053,
+            "p50Ms": 23.16705699999966,
+            "p95Ms": 35.52672199999961,
+            "p99Ms": 35.66451799999959,
+            "closedLoopAttemptsPerSecond": 1892.8353475341096
+          }
+        },
+        {
+          "id": "simultaneous-echo-3",
+          "layer": "reference-pattern",
+          "expected": 30,
+          "actual": 30,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:3",
+            "attempts": 60,
+            "successful": 60,
+            "errors": {},
+            "durationMs": 51.25113799999963,
+            "p50Ms": 31.478022999999666,
+            "p95Ms": 45.962226999999984,
+            "p99Ms": 48.53040299999975,
+            "closedLoopAttemptsPerSecond": 1170.705711939517
+          }
+        },
+        {
+          "id": "duplicate-freeze-3",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:3",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 16.3858909999999,
+            "p50Ms": 14.434360999999626,
+            "p95Ms": 16.11898199999996,
+            "p99Ms": 16.11898199999996,
+            "closedLoopAttemptsPerSecond": 610.2811253901335
+          }
+        },
+        {
+          "id": "redeem-balance-3",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:3",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 6.358365999999478,
+            "p50Ms": 5.3586459999996805,
+            "p95Ms": 6.353036000000429,
+            "p99Ms": 6.353036000000429,
+            "closedLoopAttemptsPerSecond": 1572.7311073317926
+          }
+        },
+        {
+          "id": "first-round-extension-3",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 30
+          },
+          "actual": {
+            "ASH": 9
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:3",
+            "attempts": 30,
+            "successful": 9,
+            "errors": {
+              "P2034": 21
+            },
+            "durationMs": 59.46272200000021,
+            "p50Ms": 45.49503200000072,
+            "p95Ms": 58.74066500000026,
+            "p99Ms": 59.31663900000058,
+            "closedLoopAttemptsPerSecond": 504.517771655322
+          }
+        },
+        {
+          "id": "serializable-retry-3",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:3",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 4.452393999999913,
+            "p50Ms": 3.4300270000003366,
+            "p95Ms": 4.4432389999992665,
+            "p99Ms": 4.4432389999992665,
+            "closedLoopAttemptsPerSecond": 449.1965446005091
+          }
+        },
+        {
+          "id": "matching-replay-3",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-3",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "outbox-replay-after-crash",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference:outbox-replay-after-crash",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 49.981918999999834,
+            "p50Ms": 23.934048000000075,
+            "p95Ms": 27.618797000000086,
+            "p99Ms": 32.90204899999935,
+            "closedLoopAttemptsPerSecond": 2000.723501632667
+          }
+        },
+        {
+          "id": "outbox-transaction-rollback",
+          "layer": "reference-pattern",
+          "expected": 91,
+          "actual": 91,
+          "invariantPassed": true
+        }
+      ],
+      "cleanup": "run fixtures removed"
+    },
+    {
+      "schemaVersion": 1,
+      "runId": "f0616ea5-0eb4-44eb-aa7b-83f2f411c35b",
+      "executedAt": "2026-09-22T01:47:56.993Z",
+      "commit": "d421ff545f9fe69651b8694018d70d4feb842627",
+      "scriptSha256": "dcd4a8c81b68c516cc0ef0efe429a540a02772b37061db3aee6f5201b9bd8ecf",
+      "node": "v22.23.2",
+      "database": "PostgreSQL 16.14 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+      "concurrency": 200,
+      "poolSize": 10,
+      "repeats": 3,
+      "samples": 100,
+      "fixture": {
+        "fixtureRepair": "Pre-provisioned disposable schema; migration not re-tested in this run."
+      },
+      "limits": [
+        "Closed-loop service calls; excludes HTTP, authentication, Redis locks, WS, COS and client rendering.",
+        "Actual production services imported; events and media deletion are stubs.",
+        "Reference SQL patterns are isolated proof-of-concept, NOT upgraded production service.",
+        "Latency includes caller pool queue; no production capacity certification.",
+        "Fault injection models relay crash point, not OS kill/network partition."
+      ],
+      "releaseGatePassed": false,
+      "referenceGatePassed": true,
+      "violations": 27,
+      "records": [
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 104.57994999999983,
+            "p50Ms": 80.25498700000003,
+            "p95Ms": 101.11610599999995,
+            "p99Ms": 101.77703700000006,
+            "closedLoopAttemptsPerSecond": 764.9649861182772
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 84.80645200000004,
+            "p50Ms": 61.80117300000006,
+            "p95Ms": 81.632431,
+            "p99Ms": 82.39177500000005,
+            "closedLoopAttemptsPerSecond": 1179.1555670787873
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "current-service",
+          "expected": 100,
+          "actual": 0,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:1",
+            "attempts": 200,
+            "successful": 200,
+            "errors": {},
+            "durationMs": 309.0549390000001,
+            "p50Ms": 246.403503,
+            "p95Ms": 291.68872199999987,
+            "p99Ms": 293.685555,
+            "closedLoopAttemptsPerSecond": 647.1341330028055
+          }
+        },
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 54.34161700000004,
+            "p50Ms": 42.06185899999991,
+            "p95Ms": 51.67410199999995,
+            "p99Ms": 51.81380900000022,
+            "closedLoopAttemptsPerSecond": 1472.1681910937605
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 58.41291199999978,
+            "p50Ms": 40.817923000000064,
+            "p95Ms": 57.896678000000065,
+            "p99Ms": 57.916571000000204,
+            "closedLoopAttemptsPerSecond": 1711.9502619557877
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "reference-pattern",
+          "expected": 100,
+          "actual": 100,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:1",
+            "attempts": 200,
+            "successful": 200,
+            "errors": {},
+            "durationMs": 295.8562459999998,
+            "p50Ms": 201.21883800000023,
+            "p95Ms": 289.4302869999997,
+            "p99Ms": 293.476811,
+            "closedLoopAttemptsPerSecond": 676.0039806629607
+          }
+        },
+        {
+          "id": "duplicate-freeze-1",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 36.665571999999884,
+            "p50Ms": 33.89181400000007,
+            "p95Ms": 36.6498260000003,
+            "p99Ms": 36.6498260000003,
+            "closedLoopAttemptsPerSecond": 272.73541511912134
+          }
+        },
+        {
+          "id": "redeem-balance-1",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 10.516999999999825,
+            "p50Ms": 10.096558000000186,
+            "p95Ms": 10.400636000000304,
+            "p99Ms": 10.400636000000304,
+            "closedLoopAttemptsPerSecond": 950.8414947228455
+          }
+        },
+        {
+          "id": "first-round-extension-1",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 100
+          },
+          "actual": {
+            "ASH": 60
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:1",
+            "attempts": 100,
+            "successful": 60,
+            "errors": {
+              "P2034": 40
+            },
+            "durationMs": 241.41578000000027,
+            "p50Ms": 163.2481740000003,
+            "p95Ms": 234.26691100000062,
+            "p99Ms": 237.75584699999945,
+            "closedLoopAttemptsPerSecond": 414.2231299047638
+          }
+        },
+        {
+          "id": "serializable-retry-1",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:1",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 4.373571000000084,
+            "p50Ms": 3.5830299999997806,
+            "p95Ms": 4.290020000000368,
+            "p99Ms": 4.290020000000368,
+            "closedLoopAttemptsPerSecond": 457.292221847996
+          }
+        },
+        {
+          "id": "matching-replay-1",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-1",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-2",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:2",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 80.34661199999937,
+            "p50Ms": 57.419897000000674,
+            "p95Ms": 71.58884399999988,
+            "p99Ms": 79.00532999999996,
+            "closedLoopAttemptsPerSecond": 995.6860408750108
+          }
+        },
+        {
+          "id": "daily-reward-2",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:2",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 64.4891430000007,
+            "p50Ms": 40.33996000000025,
+            "p95Ms": 60.29120200000034,
+            "p99Ms": 61.16934399999991,
+            "closedLoopAttemptsPerSecond": 1550.6486107281487
+          }
+        },
+        {
+          "id": "simultaneous-echo-2",
+          "layer": "current-service",
+          "expected": 100,
+          "actual": 0,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:2",
+            "attempts": 200,
+            "successful": 200,
+            "errors": {},
+            "durationMs": 270.4827350000005,
+            "p50Ms": 212.738918,
+            "p95Ms": 253.95768300000054,
+            "p99Ms": 254.9900460000008,
+            "closedLoopAttemptsPerSecond": 739.4187285188448
+          }
+        },
+        {
+          "id": "boarding-duplicate-2",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:2",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 51.5030569999999,
+            "p50Ms": 38.30404300000009,
+            "p95Ms": 51.25795500000004,
+            "p99Ms": 51.26104200000009,
+            "closedLoopAttemptsPerSecond": 1553.3058552233153
+          }
+        },
+        {
+          "id": "daily-reward-2",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:2",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 42.756154999999126,
+            "p50Ms": 29.43004800000017,
+            "p95Ms": 42.33699299999989,
+            "p99Ms": 42.54515399999946,
+            "closedLoopAttemptsPerSecond": 2338.8445476447087
+          }
+        },
+        {
+          "id": "simultaneous-echo-2",
+          "layer": "reference-pattern",
+          "expected": 100,
+          "actual": 100,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:2",
+            "attempts": 200,
+            "successful": 200,
+            "errors": {},
+            "durationMs": 270.0666960000008,
+            "p50Ms": 159.5028259999999,
+            "p95Ms": 257.91277999999966,
+            "p99Ms": 266.77819,
+            "closedLoopAttemptsPerSecond": 740.5578065056916
+          }
+        },
+        {
+          "id": "duplicate-freeze-2",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:2",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 19.22611600000073,
+            "p50Ms": 16.559675000000425,
+            "p95Ms": 18.93708599999991,
+            "p99Ms": 18.93708599999991,
+            "closedLoopAttemptsPerSecond": 520.1258538125755
+          }
+        },
+        {
+          "id": "redeem-balance-2",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:2",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 7.167959999999766,
+            "p50Ms": 6.515445,
+            "p95Ms": 7.023607999999513,
+            "p99Ms": 7.023607999999513,
+            "closedLoopAttemptsPerSecond": 1395.0970708542354
+          }
+        },
+        {
+          "id": "first-round-extension-2",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 100
+          },
+          "actual": {
+            "ASH": 61
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:2",
+            "attempts": 100,
+            "successful": 61,
+            "errors": {
+              "P2034": 39
+            },
+            "durationMs": 214.3553069999998,
+            "p50Ms": 148.13367199999993,
+            "p95Ms": 208.2396779999999,
+            "p99Ms": 212.23305400000027,
+            "closedLoopAttemptsPerSecond": 466.51515840473263
+          }
+        },
+        {
+          "id": "serializable-retry-2",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:2",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 5.874850000000151,
+            "p50Ms": 4.967620000000352,
+            "p95Ms": 5.835062000000107,
+            "p99Ms": 5.835062000000107,
+            "closedLoopAttemptsPerSecond": 340.4342238525151
+          }
+        },
+        {
+          "id": "matching-replay-2",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-2",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "boarding-duplicate-3",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:3",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 65.60516199999984,
+            "p50Ms": 40.54337799999939,
+            "p95Ms": 63.108086999999614,
+            "p99Ms": 64.72220000000016,
+            "closedLoopAttemptsPerSecond": 1219.4162404476679
+          }
+        },
+        {
+          "id": "daily-reward-3",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:3",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 74.6682380000002,
+            "p50Ms": 49.88164500000039,
+            "p95Ms": 72.38273800000024,
+            "p99Ms": 73.23382700000002,
+            "closedLoopAttemptsPerSecond": 1339.257530089296
+          }
+        },
+        {
+          "id": "simultaneous-echo-3",
+          "layer": "current-service",
+          "expected": 100,
+          "actual": 0,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:3",
+            "attempts": 200,
+            "successful": 200,
+            "errors": {},
+            "durationMs": 264.7041309999995,
+            "p50Ms": 202.8021660000004,
+            "p95Ms": 246.9702440000001,
+            "p99Ms": 248.75379600000088,
+            "closedLoopAttemptsPerSecond": 755.560554512088
+          }
+        },
+        {
+          "id": "boarding-duplicate-3",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:3",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 40.21385300000111,
+            "p50Ms": 26.6965739999996,
+            "p95Ms": 39.93899800000145,
+            "p99Ms": 40.20413700000063,
+            "closedLoopAttemptsPerSecond": 1989.3642123772072
+          }
+        },
+        {
+          "id": "daily-reward-3",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:3",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 49.05781699999898,
+            "p50Ms": 27.5957240000007,
+            "p95Ms": 48.77871200000118,
+            "p99Ms": 48.77921100000094,
+            "closedLoopAttemptsPerSecond": 2038.411126202417
+          }
+        },
+        {
+          "id": "simultaneous-echo-3",
+          "layer": "reference-pattern",
+          "expected": 100,
+          "actual": 100,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:3",
+            "attempts": 200,
+            "successful": 200,
+            "errors": {},
+            "durationMs": 278.2785539999986,
+            "p50Ms": 191.85820799999965,
+            "p95Ms": 271.62131000000045,
+            "p99Ms": 276.11323900000025,
+            "closedLoopAttemptsPerSecond": 718.7043238696755
+          }
+        },
+        {
+          "id": "duplicate-freeze-3",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:3",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 19.113546000000497,
+            "p50Ms": 16.904295999998794,
+            "p95Ms": 18.947865999998612,
+            "p99Ms": 18.947865999998612,
+            "closedLoopAttemptsPerSecond": 523.1891560048429
+          }
+        },
+        {
+          "id": "redeem-balance-3",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:3",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 7.323748999999225,
+            "p50Ms": 6.880302999999913,
+            "p95Ms": 7.149486000000252,
+            "p99Ms": 7.149486000000252,
+            "closedLoopAttemptsPerSecond": 1365.4209066969743
+          }
+        },
+        {
+          "id": "first-round-extension-3",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 100
+          },
+          "actual": {
+            "ASH": 76
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:3",
+            "attempts": 100,
+            "successful": 76,
+            "errors": {
+              "P2034": 24
+            },
+            "durationMs": 176.11401400000068,
+            "p50Ms": 112.89329499999985,
+            "p95Ms": 171.78075399999943,
+            "p99Ms": 174.50546899999972,
+            "closedLoopAttemptsPerSecond": 567.8139844112554
+          }
+        },
+        {
+          "id": "serializable-retry-3",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:3",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 4.774319000000105,
+            "p50Ms": 3.586221999999907,
+            "p95Ms": 4.762383000001137,
+            "p99Ms": 4.762383000001137,
+            "closedLoopAttemptsPerSecond": 418.9079112644036
+          }
+        },
+        {
+          "id": "matching-replay-3",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-3",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "outbox-replay-after-crash",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference:outbox-replay-after-crash",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 57.918666999999914,
+            "p50Ms": 26.52799099999902,
+            "p95Ms": 52.5149360000014,
+            "p99Ms": 57.838306999999986,
+            "closedLoopAttemptsPerSecond": 1726.5590729151302
+          }
+        },
+        {
+          "id": "outbox-transaction-rollback",
+          "layer": "reference-pattern",
+          "expected": 301,
+          "actual": 301,
+          "invariantPassed": true
+        }
+      ],
+      "cleanup": "run fixtures removed"
+    }
+  ],
+  "defaultGateCheck": {
+    "expectedExit": 2,
+    "observedExit": 2,
+    "report": {
+      "schemaVersion": 1,
+      "runId": "265a5d56-f589-44d0-99a2-ffde84434634",
+      "executedAt": "2026-09-22T01:47:18.997Z",
+      "commit": "d421ff545f9fe69651b8694018d70d4feb842627",
+      "scriptSha256": "dcd4a8c81b68c516cc0ef0efe429a540a02772b37061db3aee6f5201b9bd8ecf",
+      "node": "v22.23.2",
+      "database": "PostgreSQL 16.14 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+      "concurrency": 10,
+      "poolSize": 10,
+      "repeats": 1,
+      "samples": 5,
+      "fixture": {
+        "fixtureRepair": "Pre-provisioned disposable schema; migration not re-tested in this run."
+      },
+      "limits": [
+        "Closed-loop service calls; excludes HTTP, authentication, Redis locks, WS, COS and client rendering.",
+        "Actual production services imported; events and media deletion are stubs.",
+        "Reference SQL patterns are isolated proof-of-concept, NOT upgraded production service.",
+        "Latency includes caller pool queue; no production capacity certification.",
+        "Fault injection models relay crash point, not OS kill/network partition."
+      ],
+      "releaseGatePassed": false,
+      "referenceGatePassed": true,
+      "violations": 9,
+      "records": [
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 80,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 135.17307899999992,
+            "p50Ms": 11.160988999999972,
+            "p95Ms": 59.576433999999836,
+            "p99Ms": 66.48760599999991,
+            "closedLoopAttemptsPerSecond": 591.833822176974
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "current-service",
+          "expected": 1,
+          "actual": 100,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 121.48732700000005,
+            "p50Ms": 11.530097999999953,
+            "p95Ms": 19.09142699999984,
+            "p99Ms": 24.791999999999916,
+            "closedLoopAttemptsPerSecond": 823.1311237920311
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "current-service",
+          "expected": 5,
+          "actual": 0,
+          "invariantPassed": false,
+          "load": {
+            "label": "current-service:echo:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 15.982580000000098,
+            "p50Ms": 14.03987200000006,
+            "p95Ms": 15.446320999999898,
+            "p99Ms": 15.446320999999898,
+            "closedLoopAttemptsPerSecond": 625.6812104178385
+          }
+        },
+        {
+          "id": "boarding-duplicate-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:boarding:1",
+            "attempts": 80,
+            "successful": 80,
+            "errors": {},
+            "durationMs": 54.59501400000022,
+            "p50Ms": 5.826914999999872,
+            "p95Ms": 13.329870000000028,
+            "p99Ms": 13.721945999999889,
+            "closedLoopAttemptsPerSecond": 1465.3352776867075
+          }
+        },
+        {
+          "id": "daily-reward-1",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:reward:1",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 65.6843829999998,
+            "p50Ms": 6.114759000000049,
+            "p95Ms": 8.672544000000016,
+            "p99Ms": 9.145487000000003,
+            "closedLoopAttemptsPerSecond": 1522.4318998322676
+          }
+        },
+        {
+          "id": "simultaneous-echo-1",
+          "layer": "reference-pattern",
+          "expected": 5,
+          "actual": 5,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference-pattern:echo:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 18.973776999999927,
+            "p50Ms": 13.042696999999862,
+            "p95Ms": 18.735706000000164,
+            "p99Ms": 18.735706000000164,
+            "closedLoopAttemptsPerSecond": 527.0431922964015
+          }
+        },
+        {
+          "id": "duplicate-freeze-1",
+          "layer": "current-service",
+          "expected": {
+            "count": 1,
+            "remaining": 1
+          },
+          "actual": {
+            "count": 10,
+            "remaining": -8
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:freeze:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 32.20291599999996,
+            "p50Ms": 29.277736999999888,
+            "p95Ms": 31.559319999999843,
+            "p99Ms": 31.559319999999843,
+            "closedLoopAttemptsPerSecond": 310.53088484285126
+          }
+        },
+        {
+          "id": "redeem-balance-1",
+          "layer": "current-service",
+          "expected": {
+            "minBalance": 0,
+            "maxFreezes": 4
+          },
+          "actual": {
+            "balance": -90,
+            "freezes": 22
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:redeem:1",
+            "attempts": 10,
+            "successful": 10,
+            "errors": {},
+            "durationMs": 10.969046999999819,
+            "p50Ms": 10.145115000000033,
+            "p95Ms": 10.505605999999943,
+            "p99Ms": 10.505605999999943,
+            "closedLoopAttemptsPerSecond": 911.6562268354002
+          }
+        },
+        {
+          "id": "first-round-extension-1",
+          "layer": "current-service",
+          "expected": {
+            "EXTENSION": 5
+          },
+          "actual": {
+            "ASH": 4
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:first-round:1",
+            "attempts": 5,
+            "successful": 4,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 12.830690000000004,
+            "p50Ms": 11.653626000000031,
+            "p95Ms": 12.481931999999915,
+            "p99Ms": 12.481931999999915,
+            "closedLoopAttemptsPerSecond": 389.6906557636416
+          }
+        },
+        {
+          "id": "serializable-retry-1",
+          "layer": "current-service",
+          "expected": "DEEP_LINK with both votes accepted",
+          "actual": {
+            "state": "JUDGMENT",
+            "errors": {
+              "P2034": 1
+            }
+          },
+          "invariantPassed": false,
+          "load": {
+            "label": "current:concurrent-votes:1",
+            "attempts": 2,
+            "successful": 1,
+            "errors": {
+              "P2034": 1
+            },
+            "durationMs": 12.953711000000112,
+            "p50Ms": 12.670400999999856,
+            "p95Ms": 12.930239999999912,
+            "p99Ms": 12.930239999999912,
+            "closedLoopAttemptsPerSecond": 154.39591017585482
+          }
+        },
+        {
+          "id": "matching-replay-1",
+          "layer": "current-service",
+          "expected": {
+            "state": "DEEP_LINK",
+            "day": 20
+          },
+          "actual": {
+            "state": "SANDGLASS_24H",
+            "day": 0
+          },
+          "invariantPassed": false
+        },
+        {
+          "id": "cron-replay-1",
+          "layer": "current-service",
+          "expected": 6,
+          "actual": 7,
+          "invariantPassed": false
+        },
+        {
+          "id": "outbox-replay-after-crash",
+          "layer": "reference-pattern",
+          "expected": 1,
+          "actual": 1,
+          "invariantPassed": true,
+          "load": {
+            "label": "reference:outbox-replay-after-crash",
+            "attempts": 100,
+            "successful": 100,
+            "errors": {},
+            "durationMs": 52.98618599999986,
+            "p50Ms": 4.650607000000036,
+            "p95Ms": 9.066223000000036,
+            "p99Ms": 10.014711000000034,
+            "closedLoopAttemptsPerSecond": 1887.2843574738567
+          }
+        },
+        {
+          "id": "outbox-transaction-rollback",
+          "layer": "reference-pattern",
+          "expected": 6,
+          "actual": 6,
+          "invariantPassed": true
+        }
+      ],
+      "cleanup": "run fixtures removed"
+    }
+  },
+  "disclaimer": "Synthetic social outcomes are assumption-sensitive, not observed user retention. Reference SQL patterns are not production upgrades. Historical work commits in individual runs are superseded by the squashed PR; use sourceHashes to verify the exact scripts."
+}
