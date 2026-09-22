@@ -1,7 +1,9 @@
+import { Access } from '../auth/access.js';
 import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { StardustTicketService } from './stardust-ticket.service.js';
 
 @Controller('stardust-ticket')
+@Access('disabled')
 export class StardustTicketController {
   constructor(private readonly ticketService: StardustTicketService) {}
 

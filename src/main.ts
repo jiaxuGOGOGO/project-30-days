@@ -16,22 +16,26 @@ import { AppModule } from './app.module.js';
  * - Day 30 judgment sync: native WebSocket (short-lived connection)
  */
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
 
   // Use native ws adapter instead of Socket.IO for WeChat compatibility
   app.useWebSocketAdapter(new WsAdapter(app));
+  app.enableShutdownHooks();
 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: { enableImplicitConversion: true },
+      transformOptions: { enableImplicitConversion: false },
     }),
   );
 
   const port = Number(process.env.PORT ?? 3000);
-  await app.listen(port, '0.0.0.0');
+  await app.listen(port, process.env.HOST ?? '0.0.0.0');
 }
 
-void bootstrap();
+void bootstrap().catch((error: unknown) => {
+  console.error('Application startup failed:', error);
+  process.exitCode = 1;
+});

@@ -1,8 +1,10 @@
+import { Access } from '../auth/access.js';
 import { Body, Controller, Post } from '@nestjs/common';
 import { SubmitYomiAnswerDto } from './dto/submit-yomi-answer.dto.js';
 import { YomiSubmissionResult, YomiService } from './yomi.service.js';
 
 @Controller('yomi')
+@Access('disabled')
 export class YomiController {
   constructor(private readonly yomiService: YomiService) {}
 

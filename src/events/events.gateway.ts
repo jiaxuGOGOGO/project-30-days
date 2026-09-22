@@ -21,6 +21,7 @@ import { Server } from 'ws';
 interface WsClient {
   send: (data: string) => void;
   readyState: number;
+  close: (code: number, reason: string) => void;
   _rooms?: Set<string>;
 }
 
@@ -28,7 +29,7 @@ interface RoomJoinPayload {
   roomId: string;
 }
 
-@WebSocketGateway({ cors: true, path: '/events' })
+@WebSocketGateway({ path: '/events', maxPayload: 4096 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(EventsGateway.name);
 
@@ -39,8 +40,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private rooms = new Map<string, Set<WsClient>>();
 
   handleConnection(client: WsClient): void {
-    (client as any)._rooms = new Set<string>();
-    this.logger.debug('ws client connected');
+    // No membership table or private-channel contract exists yet. Fail closed.
+    // U02-B/U03 must replace this with authenticated, revocation-aware subscriptions.
+    client.close(1008, 'Subscriptions unavailable pending authorization');
   }
 
   handleDisconnect(client: WsClient): void {
@@ -62,22 +64,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('room:join')
   handleRoomJoin(@MessageBody() payload: RoomJoinPayload, @ConnectedSocket() client: WsClient): { joined: string } {
-    if (!payload?.roomId || payload.roomId.trim().length === 0) {
-      throw new Error('roomId is required');
-    }
-    const roomChannel = this.roomChannel(payload.roomId);
-
-    // Add client to room
-    if (!this.rooms.has(roomChannel)) {
-      this.rooms.set(roomChannel, new Set());
-    }
-    this.rooms.get(roomChannel)!.add(client);
-
-    // Track rooms on client
-    const clientRooms = (client as any)._rooms as Set<string>;
-    clientRooms.add(roomChannel);
-
-    return { joined: roomChannel };
+    client.close(1008, 'Subscriptions unavailable pending authorization');
+    throw new Error('Subscriptions unavailable');
   }
 
   // --- Broadcast helper ---

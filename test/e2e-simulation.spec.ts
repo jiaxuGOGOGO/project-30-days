@@ -7,10 +7,9 @@
  *   npm run test:e2e
  *   E2E_CONCURRENCY=1000 npm run test:e2e
  *
- * 本脚本故意不依赖 Nest TestingModule 自动注入。tsx/esbuild 在直跑脚本时
- * 不保证 emitDecoratorMetadata，与 Nest 构造函数 DI 结合会出现依赖为 undefined。
- * 因此这里手动显式实例化 Prisma、Redis 和业务 Service，让压测结果只反映
- * Redis 锁、Prisma 事务和状态机业务逻辑本身。
+ * 本脚本通过 tsc 编译后运行，手动组合真实业务服务和隔离数据库。
+ * 仅覆盖三个历史集成场景；真实 Nest 启动/HTTP 校验另见 baseline.spec.cjs。
+ * 必须显式设置 E2E_DATABASE_URL 与 E2E_REDIS_URL，拒绝生产库和非本地地址。
  * ============================================================================
  */
 
@@ -20,6 +19,10 @@ import { performance } from 'node:perf_hooks';
 
 import { ConnectionStatus, Decision, RoomStatus, UserRole } from '@prisma/client';
 import { ChronosService } from '../src/chronos/chronos.service.js';
+import { BoardingService } from '../src/boarding/boarding.service.js';
+import { DailyEchoService } from '../src/daily-echo/daily-echo.service.js';
+import { EventsGateway } from '../src/events/events.gateway.js';
+import { HourglassService } from '../src/hourglass/hourglass.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { RedisService } from '../src/redis/redis.service.js';
 import { FateCardChoice } from '../src/yomi/dto/submit-yomi-answer.dto.js';
@@ -32,6 +35,23 @@ import { YomiService, type YomiSubmissionResult } from '../src/yomi/yomi.service
 const ONE_HOUR_MS = 60 * 60 * 1_000;
 const ONE_DAY_MS = 24 * ONE_HOUR_MS;
 const DEFAULT_E2E_CONCURRENCY = 20;
+const fixtureUserIds: string[] = [];
+const fixtureRoomIds: string[] = [];
+const fixtureCardIds: string[] = [];
+
+function configureIsolatedEnvironment(): void {
+  const database = new URL(process.env.E2E_DATABASE_URL ?? 'missing:');
+  const cache = new URL(process.env.E2E_REDIS_URL ?? 'missing:');
+  const local = (url: URL) => ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
+  assert.ok(local(database) && ['postgres:', 'postgresql:'].includes(database.protocol));
+  assert.match(database.pathname, /^\/project30_test[a-z0-9_]*$/);
+  assert.ok(!database.searchParams.has('host'));
+  assert.ok(!database.searchParams.has('schema') || database.searchParams.get('schema') === 'public');
+  assert.ok(local(cache) && cache.protocol === 'redis:');
+  assert.match(cache.pathname, /^\/(?:[1-9]|1[0-5])$/);
+  process.env.DATABASE_URL = database.toString();
+  process.env.REDIS_URL = cache.toString();
+}
 
 function parseConcurrency(): number {
   const raw = process.env.E2E_CONCURRENCY;
@@ -59,6 +79,7 @@ function getErrorMessage(error: unknown): string {
 
 async function createTestUser(prisma: PrismaService, overrides: Partial<{ role: UserRole }> = {}) {
   const id = randomUUID();
+  fixtureUserIds.push(id);
   return prisma.user.create({
     data: {
       id,
@@ -72,6 +93,7 @@ async function createTestUser(prisma: PrismaService, overrides: Partial<{ role: 
 
 async function createTestRoom(prisma: PrismaService, overrides: Partial<{ startDate: Date; status: RoomStatus }> = {}) {
   const id = randomUUID();
+  fixtureRoomIds.push(id);
   const startDate = overrides.startDate ?? new Date(Date.now() - 5 * ONE_DAY_MS);
   const endDate = new Date(startDate.getTime() + 30 * ONE_DAY_MS);
   return prisma.instanceRoom.create({
@@ -86,6 +108,7 @@ async function createTestRoom(prisma: PrismaService, overrides: Partial<{ startD
 
 async function createTestFateCard(prisma: PrismaService) {
   const id = randomUUID();
+  fixtureCardIds.push(id);
   return prisma.fateCard.create({
     data: {
       id,
@@ -98,10 +121,12 @@ async function createTestFateCard(prisma: PrismaService) {
 
 async function purgeYomiKeys(roomId: string): Promise<void> {
   const client = redis.getClient();
-  const keys = await client.keys(`yomi:*:${roomId}:*`);
-  if (keys.length > 0) {
-    await client.del(...keys);
-  }
+  let cursor = '0';
+  do {
+    const [next, keys] = await client.scan(cursor, 'MATCH', `yomi:*:${roomId}:*`, 'COUNT', 100);
+    cursor = next;
+    if (keys.length > 0) await client.del(...keys);
+  } while (cursor !== '0');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -114,27 +139,34 @@ let yomiService: YomiService;
 let chronosService: ChronosService;
 
 async function bootstrap(): Promise<void> {
+  configureIsolatedEnvironment();
   prisma = new PrismaService();
   await prisma.onModuleInit();
+  assert.equal(await prisma.user.count(), 0, 'Legacy Chronos tests require an empty test database');
+  assert.equal(await prisma.instanceRoom.count(), 0, 'Legacy Chronos tests require an empty room database');
 
   redis = new RedisService();
   await redis.onModuleInit();
 
-  const eventsGateway = {
-    emitMatchingSucceeded: () => undefined,
-    emitMatchingFailed: () => undefined,
-    emitConnectionShattered: () => undefined,
-    emitRoleCollapsed: () => undefined,
-    emitChatModeUpdated: () => undefined,
-  };
-
-  yomiService = new YomiService(prisma, redis, eventsGateway as any);
-  chronosService = new ChronosService(prisma, redis, eventsGateway as any);
+  const eventsGateway = new EventsGateway();
+  const echoes = new DailyEchoService(prisma, eventsGateway);
+  const boarding = new BoardingService(prisma, eventsGateway);
+  const hourglass = new HourglassService(prisma, eventsGateway);
+  yomiService = new YomiService(prisma, redis, eventsGateway);
+  chronosService = new ChronosService(prisma, redis, eventsGateway, echoes, boarding, hourglass);
 }
 
 async function teardown(): Promise<void> {
-  await redis?.onModuleDestroy();
-  await prisma?.onModuleDestroy();
+  try {
+    if (prisma && fixtureRoomIds.length > 0) {
+      for (const roomId of fixtureRoomIds) await purgeYomiKeys(roomId);
+      await prisma.instanceRoom.deleteMany({ where: { id: { in: fixtureRoomIds } } });
+      await prisma.user.deleteMany({ where: { id: { in: fixtureUserIds } } });
+      await prisma.fateCard.deleteMany({ where: { id: { in: fixtureCardIds } } });
+    }
+  } finally {
+    await Promise.allSettled([redis?.onModuleDestroy(), prisma?.onModuleDestroy()]);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -234,7 +266,9 @@ async function testYomiRaceCondition(): Promise<void> {
 
   // 如果同一轮锁风暴中只有一个方向成功写入 WAITING，追加一次反向 settle，验证状态机能正常推进到 MATCHED。
   if (matched.length === 0 && waiting.length > 0) {
-    const firstWaiting = waiting[0].result;
+    const waitingSubmission = waiting[0];
+    assert.ok(waitingSubmission);
+    const firstWaiting = waitingSubmission.result;
     const settleStartedAt = performance.now();
     const settleResult = await yomiService.submitAnswer({
       roomId: room.id,
@@ -283,9 +317,10 @@ async function testYomiRaceCondition(): Promise<void> {
     `Unexpected non-conflict failures: ${unexpectedFailures.map((item) => item.message).join(' | ')}`,
   );
   assert.ok(fulfilled.length > 0, 'Expected at least one submission to acquire the Redis lock and complete business logic');
-  assert.ok(
-    finalConnections.length <= 1,
-    `FATAL: Expected at most 1 active connection for the same canonical pair, got ${finalConnections.length}`,
+  assert.equal(
+    finalConnections.length,
+    1,
+    `Expected exactly 1 settled connection for the canonical pair, got ${finalConnections.length}`,
   );
 
   console.log('  ✅ TEST 1 PASSED: No race condition, no deadlock, no dirty data.\n');
@@ -482,7 +517,7 @@ async function main(): Promise<void> {
     await testDay15WatcherCollapse();
 
     console.log('\n══════════════════════════════════════════════════════════════');
-    console.log('  🎉 ALL 3 TESTS PASSED — System integrity verified.');
+    console.log('  All 3 legacy integration scenarios passed; this is not a full-system safety certification.');
     console.log('══════════════════════════════════════════════════════════════\n');
   } catch (error) {
     console.error('\n  ❌ TEST FAILURE:', getErrorMessage(error));

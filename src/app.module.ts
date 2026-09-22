@@ -1,3 +1,4 @@
+import { AuthModule } from './auth/auth.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -17,9 +18,14 @@ import { YomiModule } from './yomi/yomi.module.js';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '.env.local'] }),
-    ScheduleModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env', '.env.local'],
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
+    }),
+    ScheduleModule.forRoot({ cronJobs: process.env.NODE_ENV !== 'test' }),
     PrismaModule,
+    AuthModule,
     RedisModule,
     EventsModule,
     YomiModule,

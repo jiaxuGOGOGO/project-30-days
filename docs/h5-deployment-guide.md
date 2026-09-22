@@ -1,116 +1,62 @@
-# H5 部署指南 — 微信审核合规策略
+# H5 构建与隔离测试部署指南
 
-## 背景
+> 当前已加入 U02-A 会话/HTTP 对象权限，但无公开登录接入，媒体和旧 WS 已关闭，前端含演示数据。以下是内部部署参考，不是公开上线许可或生产安全方案。H5 不豁免法规、隐私义务或微信平台规则；按真实业务核定资质与类目，不通过更换类目规避审核。
 
-陌生人交友类目需要 ICP 证 + 属地主管部门二次审核，个人或小团队几乎无法通过。因此采用分阶段策略：
+## 构建和产物
 
-| 阶段 | 策略 | 类目选择 | 所需资质 |
-|------|------|----------|----------|
-| **MVP 验证期** | H5 网页形式在微信内传播 | 无需类目 | 仅需备案域名 |
-| **小程序 v1** | "社交-社区/论坛"类目上线 | 社区/论坛 | 较低门槛 |
-| **小程序 v2** | 正式申请"陌生人交友"类目 | 陌生人/熟人交友 | ICP证 + 二次审核 |
-
-## H5 版本构建
-
-Taro 3 原生支持 H5 编译，代码几乎不需要修改：
+使用仓库锁定的 Node/pnpm，先在根目录安装依赖：
 
 ```bash
-# 构建 H5 版本
+pnpm install --frozen-lockfile --prod=false
 pnpm frontend:build:h5
-
-# 输出目录
-frontend/dist/h5/
+pnpm frontend:build:weapp
+test -s frontend/dist/h5/index.html
+test -s frontend/dist/weapp/app.json
 ```
 
-## 部署配置
+H5 依赖 `frontend/src/index.html` 模板；只有 JS 编译成功不算完整站点。两端输出分别位于 `frontend/dist/h5` 和 `frontend/dist/weapp`。微信开发者工具打开 frontend，miniprogramRoot 已指向后者。游客 AppID 只适合开发，不能替代真实应用注册。
 
-### 1. Nginx 配置示例
+## API 地址与代理
+
+当前 API 路径混合 `/api/day30/`、`/yomi/`、`/boarding/` 等；WS 路径是 **`/events`**，不是 `/ws/`；U02-A 暂时一律关闭订阅，下面代理仅保留路径约定。不要只代理 `/api/`，也不要给所有调用重复加 `/api`。
+
+`frontend/config/index.ts` 在构建时注入 `process.env.TARO_APP_API_BASE`；同源通常留空，跨域需填写完整 API origin（不额外附加 /api），并在后续接入时配置受限 CORS；当前后端没有开放跨域策略。前端还未完成统一 API 客户端接入，设置变量不意味着所有页面已正确使用它，见 U09。
+
+内部测试 Nginx 示例（证书、访问限制和日志策略需另配；后端绑定 loopback）：
 
 ```nginx
 server {
     listen 443 ssl;
-    server_name your-domain.com;
-
+    server_name test.example.com;
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
-
     root /var/www/project-30-days/frontend/dist/h5;
     index index.html;
 
-    # SPA 路由支持
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # API 代理
-    location /api/ {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    # WebSocket 代理
-    location /ws/ {
+    location = /events {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 65s;
+    }
+    location ~ ^/(auth|api|yomi|boarding|daily-echo|media|hourglass|observer|season|stardust-ticket)(/|$) {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location / {
+        try_files $uri $uri/ /index.html;
     }
 }
 ```
 
-### 2. 环境变量
+该代理示例尚未实机部署验收，不包含鉴权、限流或运营安全设施，不能替代应用权限控制。添加接口后需同步路由契约。后续 U10 统一验证 HTTP、WS upgrade、SPA fallback 和静态资源。
 
-在 `frontend/config/index.ts` 中配置 H5 环境：
+## 上线前未完成项
 
-```typescript
-// 生产环境 API 地址
-defineConstants: {
-  TARO_APP_API_BASE: JSON.stringify('https://your-domain.com/api')
-}
-```
-
-### 3. 域名备案
-
-- 域名必须完成 ICP 备案才能在微信内正常访问
-- 备案周期通常 7-20 个工作日
-- 建议使用 `.cn` 域名，备案速度更快
-
-### 4. 微信内分享
-
-H5 版本通过微信内网页分享传播：
-
-```typescript
-// 配置微信 JS-SDK 分享
-import wx from 'weixin-js-sdk';
-
-wx.config({
-  appId: 'your_app_id',
-  // ...
-});
-
-wx.ready(() => {
-  wx.updateAppMessageShareData({
-    title: 'Project 30-Days',
-    desc: '30天命运实验，你准备好了吗？',
-    link: 'https://your-domain.com',
-    imgUrl: 'https://your-domain.com/share-cover.png',
-  });
-});
-```
-
-## 注意事项
-
-1. **WebSocket 兼容性**：H5 版本使用原生 WebSocket，无需额外适配
-2. **Canvas 兼容性**：Matter.js 在 H5 环境使用标准 Canvas API，无需 Taro 适配层
-3. **触觉反馈**：H5 环境不支持 `Taro.vibrateShort`，需要做降级处理（已在组件中 `.catch()` 处理）
-4. **视频播放**：H5 环境使用标准 `<video>` 标签，自动播放需要 muted 属性
-
-## 从 H5 迁移到小程序
-
-当 ICP 证申请完成后，迁移步骤：
-
-1. 替换 `project.config.json` 中的 AppID
-2. 配置小程序服务器域名白名单
-3. 提交审核（选择"社区/论坛"类目）
-4. 通过后逐步申请"陌生人交友"类目
+- 浏览器和微信真机验证 Canvas、触摸/传感器、后台恢复、WS 重连、视频播放和分享；跨端编译通过不代表无需适配。
+- 微信 JS-SDK 签名由服务端安全生成；当前仓库没有完整分享接入，不提供假可用示例。
+- 按运营地区、部署地点、用户群体与真实社交业务确认备案/许可、平台类目及个人信息义务，不承诺固定审核时长或“仅备案即可”。
+- 完成 U02–U11 权限、生命周期、隐私、媒体、观测和回滚门禁，才考虑真实用户邀请测试。

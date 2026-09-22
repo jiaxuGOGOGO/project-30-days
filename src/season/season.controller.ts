@@ -1,7 +1,9 @@
+import { Access, CurrentUser, type SessionPrincipal } from '../auth/access.js';
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { SeasonService } from './season.service.js';
 
 @Controller('season')
+@Access('self')
 export class SeasonController {
   constructor(private readonly seasonService: SeasonService) {}
 
@@ -10,6 +12,7 @@ export class SeasonController {
    * GET /season/active
    */
   @Get('active')
+  @Access('public')
   async getActiveSeason() {
     return this.seasonService.getActiveSeason();
   }
@@ -19,8 +22,8 @@ export class SeasonController {
    * GET /season/assets/:userId
    */
   @Get('assets/:userId')
-  async getCrossSeasonAssets(@Param('userId') userId: string) {
-    return this.seasonService.getCrossSeasonAssets(userId);
+  async getCrossSeasonAssets(@Param('userId') _userId: string, @CurrentUser() actor: SessionPrincipal) {
+    return this.seasonService.getCrossSeasonAssets(actor.userId);
   }
 
   /**
@@ -28,6 +31,7 @@ export class SeasonController {
    * POST /season/transition
    */
   @Post('transition')
+  @Access('disabled')
   async transitionToNewSeason(@Body() body: { theme: string }) {
     return this.seasonService.transitionToNewSeason(body.theme);
   }

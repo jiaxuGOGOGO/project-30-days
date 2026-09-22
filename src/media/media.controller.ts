@@ -1,7 +1,9 @@
+import { Access } from '../auth/access.js';
 import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { MediaService } from './media.service.js';
 
 @Controller('media')
+@Access('disabled')
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 

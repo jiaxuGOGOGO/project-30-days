@@ -87,6 +87,9 @@ export class DailyEchoService {
       const dayNumber = conn.connected_days;
       const promptIndex = (dayNumber - 2) % DAILY_PROMPTS.length;
       const promptText = DAILY_PROMPTS[promptIndex];
+      if (promptText === undefined) {
+        throw new Error(`No daily prompt configured for day ${dayNumber}`);
+      }
 
       try {
         await this.prisma.dailyEcho.create({

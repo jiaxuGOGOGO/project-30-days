@@ -1,28 +1,21 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { HourglassService, UseFreezeDto } from './hourglass.service.js';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Access, CurrentUser, type SessionPrincipal } from '../auth/access.js';
+import { ActorQueryDto, ConnectionRequestDto } from '../auth/request.dto.js';
+import { HourglassService } from './hourglass.service.js';
 
 @Controller('hourglass')
+@Access('connection')
 export class HourglassController {
   constructor(private readonly hourglassService: HourglassService) {}
 
-  /**
-   * Use one hourglass freeze for today.
-   * POST /hourglass/freeze
-   */
   @Post('freeze')
-  async useFreeze(@Body() dto: UseFreezeDto) {
-    return this.hourglassService.useFreeze(dto);
+  async useFreeze(@Body() dto: ConnectionRequestDto, @CurrentUser() actor: SessionPrincipal) {
+    return this.hourglassService.useFreeze({ ...dto, userId: actor.userId });
   }
 
-  /**
-   * Get freeze status for a user in a connection.
-   * GET /hourglass/status/:connectionId?userId=xxx
-   */
   @Get('status/:connectionId')
-  async getFreezeStatus(
-    @Param('connectionId') connectionId: string,
-    @Query('userId') userId: string,
-  ) {
-    return this.hourglassService.getFreezeStatus(userId, connectionId);
+  async getFreezeStatus(@Param('connectionId', ParseUUIDPipe) connectionId: string,
+    @Query() _query: ActorQueryDto, @CurrentUser() actor: SessionPrincipal) {
+    return this.hourglassService.getFreezeStatus(actor.userId, connectionId);
   }
 }
